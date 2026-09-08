@@ -1,0 +1,23 @@
+[submodule "blog-admin"]
+	path = blog-admin
+	url = git@github.com:ve-weiyi/blog-admin.git
+
+[submodule "blog-app"]
+	path = blog-app
+	url = git@github.com:ve-weiyi/blog-app.git
+
+[submodule "blog-cloud"]
+	path = blog-cloud
+	url = git@github.com:ve-weiyi/blog-cloud.git
+
+[submodule "goctlx"]
+	path = goctlx
+	url = git@github.com:ve-weiyi/goctlx.git
+
+[submodule "stompws"]
+	path = stompws
+	url = git@github.com:ve-weiyi/stompws.git
+
+[submodule "vkit"]
+	path = vkit
+	url = git@github.com:ve-weiyi/vkit.git

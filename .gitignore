@@ -1,0 +1,95 @@
+# Binaries and executables
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.obj
+*.exp
+*.pdb
+*.ilk
+*.manifest
+
+# Build artifacts
+build/
+dist/
+out/
+target/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Backup / legacy
+scan3d-web/bag/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Go specific
+*.test
+*.prof
+coverage.out
+
+*.db
+
+*.jpg
+*.bmp
+*.jpeg
+*.png
+*.bin
+*.onnx
+
+Examples
+*.o
+*.zip
+*.rar
+*.tgz
+
+test.*
+any.go
+any_test.go
+*.sum
+data
+logs
+runtime
+
+*.bat
+.ps1
+!打包模板/package.bat
+.superpowers
+superpowers
+settings.local.json
+.claude/rules/windows-build.md
+*.stackdump
+*.stackdump
