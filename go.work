@@ -1,0 +1,8 @@
+go 1.26.1
+
+use (
+ ./blog-cloud
+ ./goctlx
+ ./stompws
+ ./vkit
+)
