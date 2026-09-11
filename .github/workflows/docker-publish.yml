@@ -1,0 +1,262 @@
+name: Docker Build and Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      services:
+        description: 'Service to build'
+        type: choice
+        required: true
+        default: 'all'
+        options:
+          - all
+          - app-rpc
+          - app-api
+          - admin-api
+          - app-web
+          - admin-web
+      deploy_services:
+        description: 'Service to deploy'
+        type: choice
+        required: true
+        default: 'skip'
+        options:
+          - skip
+          - all
+          - app-rpc
+          - app-api
+          - admin-api
+          - app-web
+          - admin-web
+
+# Prevent concurrent deployments
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ve-weiyi
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  prepare:
+    name: Prepare Build Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      deploy_matrix: ${{ steps.set-matrix.outputs.deploy_matrix }}
+
+    steps:
+      - name: Set build matrix
+        id: set-matrix
+        run: |
+          # backend  ：context 为仓库根，靠 service_dir 定位要构建的服务目录
+          # frontend ：context 为该前端子模块目录，靠 dist_dir 定位构建产物
+          ALL='[
+            {"service":"app-rpc",   "context":".",          "dockerfile":"./deploy/docker/backend/Dockerfile",  "service_dir":"blog-cloud/rpc/blog",  "type":"backend",  "port":"9120"},
+            {"service":"app-api",   "context":".",          "dockerfile":"./deploy/docker/backend/Dockerfile",  "service_dir":"blog-cloud/api/app",   "type":"backend",  "port":"9420"},
+            {"service":"admin-api", "context":".",          "dockerfile":"./deploy/docker/backend/Dockerfile",  "service_dir":"blog-cloud/api/admin", "type":"backend",  "port":"9421"},
+            {"service":"app-web",   "context":"./blog-app", "dockerfile":"./deploy/docker/frontend/Dockerfile", "dist_dir":"dist/blog",  "proxy_pass":"blog.veweiyi.cn",  "type":"frontend", "port":"9521"},
+            {"service":"admin-web", "context":"./blog-admin","dockerfile":"./deploy/docker/frontend/Dockerfile", "dist_dir":"dist/admin", "proxy_pass":"admin.veweiyi.cn", "type":"frontend", "port":"9520"}
+          ]'
+
+          INPUT="${{ github.event.inputs.services }}"
+          if [ "$INPUT" = "all" ]; then
+            MATRIX_JSON=$(echo "$ALL" | jq -c '.')
+            echo "Build: all 5 services"
+          else
+            MATRIX_JSON=$(echo "$ALL" | jq -c --arg svc "$INPUT" '[.[] | select(.service == $svc)]')
+            echo "Build: ${INPUT}"
+          fi
+          echo "matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
+
+          DEPLOY_INPUT="${{ github.event.inputs.deploy_services }}"
+          if [ "$DEPLOY_INPUT" = "skip" ]; then
+            echo "deploy_matrix=[]" >> $GITHUB_OUTPUT
+            echo "Deploy: skipped"
+          elif [ "$DEPLOY_INPUT" = "all" ]; then
+            echo "deploy_matrix=$(echo "$ALL" | jq -c '.')" >> $GITHUB_OUTPUT
+            echo "Deploy: all 5 services"
+          else
+            echo "deploy_matrix=$(echo "$ALL" | jq -c --arg svc "$DEPLOY_INPUT" '[.[] | select(.service == $svc)]')" >> $GITHUB_OUTPUT
+            echo "Deploy: ${DEPLOY_INPUT}"
+          fi
+
+  build-and-push:
+    name: Build ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      # CI 里没有 SSH key，子模块走 HTTPS + PAT 拉取
+      - name: Setup submodules via HTTPS
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          git config --global url."https://${GH_TOKEN}@github.com/".insteadOf "git@github.com:"
+          git submodule update --init --recursive
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/blog-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            SERVICE_DIR=${{ matrix.service_dir }}
+            DIST_DIR=${{ matrix.dist_dir }}
+            PROXY_PASS=${{ matrix.proxy_pass }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          platforms: linux/amd64
+
+      - name: Generate build summary
+        run: |
+          echo "## Build Summary - ${{ matrix.service }} :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** \`${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Type:** \`${{ matrix.type }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/blog-${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    name: Deploy ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: [prepare, build-and-push]
+    if: github.event.inputs.deploy_services != 'skip'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.deploy_matrix) }}
+
+    environment:
+      name: production
+
+    steps:
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          SERVICE: ${{ matrix.service }}
+          SERVICE_TYPE: ${{ matrix.type }}
+          EXPOSE_PORT: ${{ matrix.port }}
+          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_NAMESPACE: ${{ env.IMAGE_NAMESPACE }}
+          NACOS_IP: ${{ vars.NACOS_IP }}
+          NACOS_PORT: ${{ vars.NACOS_PORT }}
+          NACOS_USERNAME: ${{ vars.NACOS_USERNAME }}
+          NACOS_PASSWORD: ${{ vars.NACOS_PASSWORD }}
+          NACOS_NAMESPACE: ${{ vars.NACOS_NAMESPACE }}
+          NACOS_GROUP: ${{ vars.NACOS_GROUP }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_ACTOR: ${{ github.actor }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          envs: SERVICE,SERVICE_TYPE,EXPOSE_PORT,REGISTRY,IMAGE_NAMESPACE,NACOS_IP,NACOS_PORT,NACOS_USERNAME,NACOS_PASSWORD,NACOS_NAMESPACE,NACOS_GROUP,GHCR_TOKEN,GHCR_ACTOR
+          script: |
+            set -e
+
+            CONTAINER_NAME="blog-${SERVICE}"
+            IMAGE_TAG="${REGISTRY}/${IMAGE_NAMESPACE}/blog-${SERVICE}:latest"
+
+            echo "=== Deployment Started ==="
+            echo "Service: ${CONTAINER_NAME}"
+            echo "Type: ${SERVICE_TYPE}"
+            echo "Image: ${IMAGE_TAG}"
+            echo "Time: $(date)"
+
+            echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GHCR_ACTOR}" --password-stdin
+
+            echo "Pulling new image..."
+            docker pull "${IMAGE_TAG}"
+
+            echo "Stopping old container..."
+            docker stop "${CONTAINER_NAME}" 2>/dev/null || true
+            docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
+
+            # 前端容器内部固定监听 80；后端监听各自的服务端口
+            if [ "${SERVICE_TYPE}" = "frontend" ]; then
+              CONTAINER_PORT=80
+              APP_ARGS=""
+            else
+              CONTAINER_PORT="${EXPOSE_PORT}"
+              APP_ARGS="./server -nacos-host ${NACOS_IP} -nacos-port ${NACOS_PORT} -nacos-username ${NACOS_USERNAME} -nacos-password ${NACOS_PASSWORD} -nacos-namespace ${NACOS_NAMESPACE} -nacos-group ${NACOS_GROUP} -nacos-data-id ${CONTAINER_NAME}"
+            fi
+
+            echo "Starting new container..."
+            docker run -d \
+              --name "${CONTAINER_NAME}" \
+              --restart unless-stopped \
+              -p "${EXPOSE_PORT}:${CONTAINER_PORT}" \
+              -v /data/runtime:/app/runtime \
+              -v /data/etc:/app/etc \
+              -e TZ=Asia/Shanghai \
+              "${IMAGE_TAG}" \
+              ${APP_ARGS}
+
+            echo "Verifying deployment..."
+            sleep 5
+            if docker ps | grep -q "${CONTAINER_NAME}"; then
+              echo "✅ Deployment successful!"
+            else
+              echo "❌ Deployment failed!"
+              exit 1
+            fi
+
+            echo "Cleaning up old images..."
+            docker image prune -f
+
+            echo "=== Deployment Completed ==="
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "## Deployment Summary - ${{ matrix.service }} :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** \`${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+          echo "**Port:** ${{ matrix.port }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Deployed successfully" >> $GITHUB_STEP_SUMMARY

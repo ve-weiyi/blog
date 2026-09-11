@@ -1,0 +1,125 @@
+services:
+  # ============================================================
+  # app-rpc — gRPC 服务（文章 / 用户 / 互动 / 通知 / 配置）
+  # ============================================================
+  app-rpc:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend/Dockerfile
+      args:
+        SERVICE_DIR: blog-cloud/rpc/blog
+    image: blog-app-rpc:latest
+    container_name: blog-app-rpc
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    ports:
+      - "${APP_RPC_PORT:-9120}:${APP_RPC_PORT:-9120}"
+    volumes:
+      - ./runtime:/app/runtime
+    command: [
+      "./server",
+      "-nacos-host", "${NACOS_HOST}",
+      "-nacos-port", "${NACOS_PORT}",
+      "-nacos-username", "${NACOS_USERNAME}",
+      "-nacos-password", "${NACOS_PASSWORD}",
+      "-nacos-namespace", "${NACOS_NAMESPACE}",
+      "-nacos-group", "${NACOS_GROUP}",
+      "-nacos-data-id", "blog-app-rpc"
+    ]
+
+  # ============================================================
+  # app-api — HTTP 网关（用户端）
+  # ============================================================
+  app-api:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend/Dockerfile
+      args:
+        SERVICE_DIR: blog-cloud/api/app
+    image: blog-app-api:latest
+    container_name: blog-app-api
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    ports:
+      - "${APP_API_PORT:-9420}:${APP_API_PORT:-9420}"
+    volumes:
+      - ./runtime:/app/runtime
+    command: [
+      "./server",
+      "-nacos-host", "${NACOS_HOST}",
+      "-nacos-port", "${NACOS_PORT}",
+      "-nacos-username", "${NACOS_USERNAME}",
+      "-nacos-password", "${NACOS_PASSWORD}",
+      "-nacos-namespace", "${NACOS_NAMESPACE}",
+      "-nacos-group", "${NACOS_GROUP}",
+      "-nacos-data-id", "blog-app-api"
+    ]
+
+  # ============================================================
+  # admin-api — HTTP 网关（管理后台）
+  # ============================================================
+  admin-api:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend/Dockerfile
+      args:
+        SERVICE_DIR: blog-cloud/api/admin
+    image: blog-admin-api:latest
+    container_name: blog-admin-api
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    ports:
+      - "${ADMIN_API_PORT:-9421}:${ADMIN_API_PORT:-9421}"
+    volumes:
+      - ./runtime:/app/runtime
+    command: [
+      "./server",
+      "-nacos-host", "${NACOS_HOST}",
+      "-nacos-port", "${NACOS_PORT}",
+      "-nacos-username", "${NACOS_USERNAME}",
+      "-nacos-password", "${NACOS_PASSWORD}",
+      "-nacos-namespace", "${NACOS_NAMESPACE}",
+      "-nacos-group", "${NACOS_GROUP}",
+      "-nacos-data-id", "blog-admin-api"
+    ]
+
+  # ============================================================
+  # app-web — 用户端前端（Vue 3 SPA）
+  # ============================================================
+  app-web:
+    build:
+      context: ../../blog-app
+      dockerfile: ../deploy/docker/frontend/Dockerfile
+      args:
+        DIST_DIR: dist/blog
+        PROXY_PASS: blog.veweiyi.cn
+    image: blog-app-web:latest
+    container_name: blog-app-web
+    restart: unless-stopped
+    ports:
+      - "${APP_WEB_PORT:-9521}:80"
+
+  # ============================================================
+  # admin-web — 管理后台前端（Vue 3 SPA）
+  # ============================================================
+  admin-web:
+    build:
+      context: ../../blog-admin
+      dockerfile: ../deploy/docker/frontend/Dockerfile
+      args:
+        DIST_DIR: dist/admin
+        PROXY_PASS: admin.veweiyi.cn
+    image: blog-admin-web:latest
+    container_name: blog-admin-web
+    restart: unless-stopped
+    ports:
+      - "${ADMIN_WEB_PORT:-9520}:80"

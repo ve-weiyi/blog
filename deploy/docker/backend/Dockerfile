@@ -2,20 +2,21 @@ FROM golang:alpine AS builder
 
 LABEL stage=gobuilder
 
-ARG SERVICE_TYPE
-ARG SERVICE_NAME
-
 ENV CGO_ENABLED=0
 ENV GOPROXY=https://goproxy.cn,direct
 
 RUN apk update --no-cache && apk add --no-cache tzdata
 
-WORKDIR /build
+# 要构建的服务目录，以仓库根为构建上下文：
+#   blog-cloud/api/admin   blog-cloud/api/app   blog-cloud/rpc/blog
+ARG SERVICE_DIR
 
-COPY . .
-RUN go get -u github.com/ve-weiyi/vkit@latest
+# 以仓库根目录为上下文构建，go.work 与各子模块的 replace 自然生效
+COPY . /build/
+WORKDIR /build/${SERVICE_DIR}
+
 RUN go mod tidy
-RUN go build -ldflags="-s -w" -o /app/server service/${SERVICE_NAME}/${SERVICE_TYPE}/*.go
+RUN go build -ldflags="-s -w" -o /app/server .
 
 FROM alpine
 
