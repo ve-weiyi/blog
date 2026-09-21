@@ -76,6 +76,7 @@ blog 是一个基于 Go 语言开发的现代化博客系统，采用微服务�
 blog/
 ├── Makefile          # 一键脚本：初始化、依赖、起停服务
 ├── blog-cloud/       # 后端服务：api/admin、api/app、rpc/blog
+├── blog-gin/         # 后端服务：Gin 单体版
 ├── blog-admin/       # 管理后台前端（Vue 3 + Element Plus）
 ├── blog-app/         # 博客前台前端（Vue 3 + Naive UI）
 ├── vkit/             # 公共库：adapter（外部服务适配）、infra（框架封装）、x（通用能力）
@@ -168,6 +169,7 @@ Docker · Docker Compose · Kubernetes · Nginx
 | 项目 | 说明 | 仓库 |
 |------|------|------|
 | [blog-cloud](./blog-cloud) | 后端服务（go-zero 微服务版） | [GitHub](https://github.com/ve-weiyi/blog-cloud) |
+| [blog-gin](./blog-gin) | 后端服务（Gin 单体版） | [GitHub](https://github.com/ve-weiyi/blog-gin) |
 | [blog-admin](./blog-admin) | 管理后台前端 | [GitHub](https://github.com/ve-weiyi/blog-admin) |
 | [blog-app](./blog-app) | 博客前台前端 | [GitHub](https://github.com/ve-weiyi/blog-app) |
 | [vkit](./vkit) | 公共库（适配器与工具集） | [GitHub](https://github.com/ve-weiyi/vkit) |

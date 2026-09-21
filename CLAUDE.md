@@ -9,7 +9,7 @@ monorepo + git submodule：主仓库负责协议定义、部署编排与文档�
 | 想要什么 | 看哪 | 加载时机 |
 |---|---|---|
 | 工作流程（改动流程、`cd`/大小写陷阱、`cmd/` 诊断、凭据约束、文档归属、CI 校验） | [`.claude/rules/workflow.md`](.claude/rules/workflow.md) | 每次会话 |
-| 后端分层、vkit 三层判据 | [`.claude/rules/architecture.md`](.claude/rules/architecture.md) | `**/*.go` |
+| 后端分层、vkit 两层判据 | [`.claude/rules/architecture.md`](.claude/rules/architecture.md) | `**/*.go` |
 | Go 设计规范（包命名、测试） | [`.claude/rules/go.md`](.claude/rules/go.md) | `**/*.go` |
 | 后端约定（分层职责、统一响应格式、API 修改流程、GORM、错误处理） | [`.claude/rules/backend.md`](.claude/rules/backend.md) | `**/*.go`、`**/*.api`、`**/*.proto` |
 | 前端约定 | [`.claude/rules/frontend.md`](.claude/rules/frontend.md) | `**/*.vue`、`**/*.ts` |

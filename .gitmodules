@@ -10,6 +10,10 @@
 	path = blog-cloud
 	url = git@github.com:ve-weiyi/blog-cloud.git
 
+[submodule "blog-gin"]
+	path = blog-gin
+	url = git@github.com:ve-weiyi/blog-gin.git
+
 [submodule "goctlx"]
 	path = goctlx
 	url = git@github.com:ve-weiyi/goctlx.git

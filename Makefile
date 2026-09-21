@@ -20,7 +20,7 @@ FRONTENDS := blog-admin:9521 blog-app:9520
 FRONTEND_PORTS := $(foreach w,$(FRONTENDS),$(word 2,$(subst :, ,$(w))))
 
 # go.work 下的全部模块，install 时逐个 tidy
-WORK_MODULES := blog-cloud goctlx stompws vkit
+WORK_MODULES := blog-cloud blog-gin goctlx stompws vkit
 
 # Darwin 无 stdbuf，行缓冲置空
 UNAME_S := $(shell uname -s)

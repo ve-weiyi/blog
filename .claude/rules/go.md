@@ -23,7 +23,6 @@ paths:
 ## 包命名
 
 - 包名用一句话说清目的。禁止 `util` / `helper` / `common` / `misc` 这类 junk drawer 名
-- `vkit/x/` 下统一 `*x` 后缀；**父目录已表达语义时子包不重复前缀** —— `infra/gormx/gormlogx` 应为 `infra/gormx/logx`，`adapter/mqx/kafkax` 应为 `adapter/mqx/kafka`
 - **选名前先查名字有没有被占**（同文件同时引用两个同名包非起别名不可，调用点会歧义）。go-zero 就占了一批 `*x` 名（`jsonx`、`stringx`、`logx`、`filex`、`httpx` 等），别与之撞车：
   ```bash
   find ~/go/pkg/mod -maxdepth 6 -type d -name <候选名>   # 空 = 没被占
@@ -37,5 +36,4 @@ paths:
 - 表驱动 + `t.Run(用例名, ...)`，每个用例独立可读
 - **需要真实凭证或会产生外部副作用的验证不要放进测试目录**，升级为 `cmd/` 下的 main 程序（见 [workflow.md](workflow.md)「诊断与示例程序」一节）
 - 动了并发相关代码，跑 `-race`
-- 改了共享库（`vkit`）跑两遍：`go build ./...` 与 `GOWORK=off go build ./...` —— workspace 会取全仓最高版本，掩盖"模块自身声明的最低依赖版本不可用"
 - **声称"重构不改变行为"之前先取基线**：改之前把输出快照存下来，改完逐字节比对；旧实现还在 git 里时，优先写一个临时对照测试拿它当 oracle，不要凭印象判断"等价"
