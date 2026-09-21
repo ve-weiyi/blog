@@ -1,14 +1,14 @@
 # ============================================================
-# blog-admin-web
+# admin-web
 # ============================================================
 apiVersion: v1
 kind: Service
 metadata:
-  name: blog-admin-web
+  name: admin-web
   namespace: blog
 spec:
   selector:
-    app: blog-admin-web
+    app: admin-web
   ports:
     - port: 80
       targetPort: 80
@@ -16,10 +16,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: blog-admin-web
+  name: admin-web
   namespace: blog
   labels:
-    app: blog-admin-web
+    app: admin-web
 spec:
   replicas: 1
   revisionHistoryLimit: 5
@@ -27,17 +27,17 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: blog-admin-web
+      app: admin-web
   template:
     metadata:
       labels:
-        app: blog-admin-web
+        app: admin-web
     spec:
       imagePullSecrets:
         - name: ghcr-secret
       containers:
-        - name: blog-admin-web
-          image: ghcr.io/ve-weiyi/ve-admin-element:latest
+        - name: admin-web
+          image: ghcr.io/ve-weiyi/admin-web:latest
           ports:
             - containerPort: 80
           env:

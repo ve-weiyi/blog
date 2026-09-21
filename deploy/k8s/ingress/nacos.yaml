@@ -1,0 +1,33 @@
+# ============================================================
+# Ingress：nacos.veweiyi.cn → Nacos 控制台（8080）
+#
+# Nacos API（8848）**不**经本 Ingress 暴露：应用跑在集群内，
+# 直接用服务短名 nacos:8848 拉配置（见 ../app/nacos-config.yaml 的 NACOS_HOST）。
+# 只有集群外的工具要调 Nacos API 时才需要额外开 8848 entryPoint。
+#
+# TLS：Secret blog-nacos-tls 由 cert-manager 签发（见 certificates.yaml）
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nacos-ingress
+  namespace: blog
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: blog-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - nacos.veweiyi.cn
+      secretName: blog-nacos-tls
+  rules:
+    - host: nacos.veweiyi.cn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nacos
+                port:
+                  number: 8080

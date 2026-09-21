@@ -1,0 +1,177 @@
+syntax = "v1"
+
+import "types.api"
+
+// ==================== 登录日志 ====================
+type (
+	LoginLogVO {
+		Id         int64        `json:"id,optional"`
+		UserId     string       `json:"user_id"` // 用户id
+		DeviceId   string       `json:"device_id"` // 终端id
+		LoginType  string       `json:"login_type"` // 登录类型
+		Status     int64        `json:"status"` // 登录状态：0-失败 1-成功
+		FailReason string       `json:"fail_reason"` // 失败原因
+		LoginAt    int64        `json:"login_at"` // 登录时间（对应 proto 的 created_at）
+		LogoutAt   int64        `json:"logout_at"` // 登出时间
+		UserInfo   *UserInfoVO  `json:"user_info"` // 用户信息
+		GuestInfo  *GuestInfoVO `json:"guest_info"` // 游客信息
+	}
+	QueryLoginLogListReq {
+		ListQuery
+		UserId    *string `json:"user_id,optional"`
+		Status    *int64  `json:"status,optional"` // 登录状态：0-失败 1-成功
+		StartDate *string `json:"start_date,optional"`
+		EndDate   *string `json:"end_date,optional"`
+	}
+	DeleteLoginLogReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "登录日志"
+	prefix:     /admin-api/v1
+	group:      syslog/login_log
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取登录日志列表"
+	@handler QueryLoginLogList
+	get /login-logs (QueryLoginLogListReq) returns (ListResult)
+
+	@doc "批量删除登录日志"
+	@handler BatchDeleteLoginLog
+	post /login-logs/batch-delete (DeleteLoginLogReq) returns (BatchResp)
+}
+
+// ==================== 操作日志 ====================
+type (
+	OperationLogVO {
+		Id             int64        `json:"id,optional"`
+		UserId         string       `json:"user_id"`
+		DeviceId       string       `json:"device_id"`
+		Module         string       `json:"module"`
+		Description    string       `json:"description"`
+		RequestUri     string       `json:"request_uri"`
+		RequestMethod  string       `json:"request_method"`
+		RequestData    string       `json:"request_data"`
+		ResponseData   string       `json:"response_data"`
+		ResponseStatus int64        `json:"response_status"`
+		Cost           string       `json:"cost"`
+		CreatedAt      int64        `json:"created_at"`
+		UpdatedAt      int64        `json:"updated_at"`
+		UserInfo       *UserInfoVO  `json:"user_info"`
+		GuestInfo      *GuestInfoVO `json:"guest_info"`
+	}
+	QueryOperationLogListReq {
+		ListQuery
+		UserId    *string `json:"user_id,optional"`
+		Module    *string `json:"module,optional"`
+		StartDate *string `json:"start_date,optional"`
+		EndDate   *string `json:"end_date,optional"`
+	}
+	DeleteOperationLogReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "操作日志"
+	prefix:     /admin-api/v1
+	group:      syslog/operation_log
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取操作日志列表"
+	@handler QueryOperationLogList
+	get /operation-logs (QueryOperationLogListReq) returns (ListResult)
+
+	@doc "批量删除操作日志"
+	@handler BatchDeleteOperationLog
+	post /operation-logs/batch-delete (DeleteOperationLogReq) returns (BatchResp)
+}
+
+// ==================== 文件日志 ====================
+type (
+	UploadLogVO {
+		Id        int64        `json:"id,optional"`
+		UserId    string       `json:"user_id"`
+		DeviceId  string       `json:"device_id"`
+		FileBase  string       `json:"file_base"`
+		FileName  string       `json:"file_name"`
+		FileType  string       `json:"file_type"`
+		FileSize  int64        `json:"file_size"`
+		FileUrl   string       `json:"file_url"`
+		CreatedAt int64        `json:"created_at"`
+		UpdatedAt int64        `json:"updated_at"`
+		UserInfo  *UserInfoVO  `json:"user_info"`
+		GuestInfo *GuestInfoVO `json:"guest_info"`
+	}
+	QueryUploadLogListReq {
+		ListQuery
+		FileType *string `json:"file_type,optional"`
+	}
+	DeleteUploadLogReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "文件日志"
+	prefix:     /admin-api/v1
+	group:      syslog/upload_log
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取文件日志列表"
+	@handler QueryUploadLogList
+	get /upload-logs (QueryUploadLogListReq) returns (ListResult)
+
+	@doc "批量删除文件日志"
+	@handler BatchDeleteUploadLog
+	post /upload-logs/batch-delete (DeleteUploadLogReq) returns (BatchResp)
+}
+
+// ==================== 访问日志 ====================
+type (
+	VisitLogVO {
+		Id        int64        `json:"id,optional"`
+		UserId    string       `json:"user_id"`
+		DeviceId  string       `json:"device_id"`
+		PageName  string       `json:"page_name"`
+		CreatedAt int64        `json:"created_at"`
+		UpdatedAt int64        `json:"updated_at"`
+		UserInfo  *UserInfoVO  `json:"user_info"`
+		GuestInfo *GuestInfoVO `json:"guest_info"`
+	}
+	QueryVisitLogListReq {
+		ListQuery
+		UserId   *string `json:"user_id,optional"`
+		DeviceId *string `json:"device_id,optional"`
+		PageName *string `json:"page_name,optional"`
+	}
+	DeleteVisitLogReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "访问日志"
+	prefix:     /admin-api/v1
+	group:      syslog/visit_log
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取访问日志列表"
+	@handler QueryVisitLogList
+	get /visit-logs (QueryVisitLogListReq) returns (ListResult)
+
+	@doc "批量删除访问日志"
+	@handler BatchDeleteVisitLog
+	post /visit-logs/batch-delete (DeleteVisitLogReq) returns (BatchResp)
+}
+

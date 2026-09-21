@@ -9,12 +9,22 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: 'mysql7914'
-      MYSQL_USER: 'veweiyi'
-      MYSQL_PASSWORD: 'mysql7914'
+      MYSQL_ROOT_PASSWORD: 'blog-mysql-2026'
+      MYSQL_USER: 'blog'
+      MYSQL_PASSWORD: 'blog-mysql-2026'
+      # 与各服务配置的 MysqlConf.Dbname 保持一致，免去手动建库
+      MYSQL_DATABASE: 'blog'
       TZ: 'Asia/Shanghai'
     volumes:
       - mysql:/var/lib/mysql
     command:
       --character-set-server=utf8mb4
-      --collation-server=utf8mb4_general_ci
+      --collation-server=utf8mb4_0900_ai_ci
+
+# 依赖与应用共用同一外部网络。应用侧读的是 Nacos `prod` 配置，
+# 里面主机名写的是 mysql / redis / rabbitmq / minio —— 正是各文件的 service 名，
+# 只有同处一个网络才能解析。网络由 deploy/docker/up.sh 创建，不归任何 compose 项目所有。
+networks:
+  default:
+    name: blog-net
+    external: true

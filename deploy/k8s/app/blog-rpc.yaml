@@ -1,0 +1,88 @@
+# ============================================================
+# blog-rpc
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-rpc
+  namespace: blog
+  labels:
+    app: blog-rpc
+spec:
+  replicas: 1 # Pod 副本数
+  revisionHistoryLimit: 5 # 保留的历史版本数，用于回滚
+  selector:
+    matchLabels:
+      app: blog-rpc
+  template:
+    metadata:
+      labels:
+        app: blog-rpc
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: blog-rpc
+          image: ghcr.io/ve-weiyi/blog-rpc:latest
+          ports:
+            - containerPort: 9120
+          envFrom:
+            - configMapRef:
+                name: nacos-config
+          env:
+            # 绕过 protobuf 全局注册冲突：etcd 客户端库与项目自身都有 auth.proto。
+            # 该变量不在 protobuf 的兼容性承诺内，属已知技术债（根治办法是重命名 auth.proto）。
+            - name: GOLANG_PROTOBUF_REGISTRATION_CONFLICT
+              value: warn
+          command: ["./server"]
+          args:
+            - "-nacos-host=$(NACOS_HOST)"
+            - "-nacos-port=$(NACOS_PORT)"
+            - "-nacos-username=$(NACOS_USERNAME)"
+            - "-nacos-password=$(NACOS_PASSWORD)"
+            - "-nacos-namespace=$(NACOS_NAMESPACE)"
+            - "-nacos-group=$(NACOS_GROUP)"
+            - "-nacos-data-id=blog-rpc"
+          # 就绪探针：Pod 就绪后才接收流量
+          readinessProbe:
+            tcpSocket:
+              port: 9120
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # 存活探针：探测失败则重启容器
+          livenessProbe:
+            tcpSocket:
+              port: 9120
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          # 资源限制：requests 用于调度，limits 防止资源滥用
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: runtime
+              mountPath: /app/runtime
+            - name: timezone
+              mountPath: /etc/localtime
+      volumes:
+        - name: runtime
+          emptyDir: {}
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blog-rpc
+  namespace: blog
+spec:
+  selector:
+    app: blog-rpc
+  ports:
+    - port: 9120
+      targetPort: 9120

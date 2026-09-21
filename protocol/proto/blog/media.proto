@@ -1,0 +1,202 @@
+syntax = "proto3";
+
+package blog.media.v1;
+
+option go_package = "./mediarpc";
+
+// ============================================
+// 通用消息定义
+// ============================================
+
+message ListQuery {
+  int64 page = 1;                  // 当前页码
+  int64 page_size = 2;             // 每页数量
+  repeated string sorts = 3;       // 排序字段（格式：字段名+空格+asc/desc，如 "created_at desc"）
+}
+
+message ListResult {
+  int64 page = 1;                  // 当前页码
+  int64 page_size = 2;             // 每页数量
+  int64 total = 3;                 // 总数
+}
+
+// ============================================
+// 核心数据模型
+// ============================================
+
+// 照片
+message Photo {
+  int64 id = 1;                    // 主键
+  int64 album_id = 2;              // 相册ID
+  string photo_name = 3;           // 照片名
+  string photo_desc = 4;           // 照片描述
+  string photo_src = 5;            // 照片地址
+  int64 is_delete = 6;             // 是否删除 0否 1是
+  int64 created_at = 7;            // 创建时间（时间戳，毫秒）
+  int64 updated_at = 8;            // 更新时间（时间戳，毫秒）
+}
+
+// 相册
+message Album {
+  int64 id = 1;                    // 主键
+  string album_name = 2;           // 相册名
+  string album_desc = 3;           // 相册描述
+  string album_cover = 4;          // 相册封面
+  int64 is_delete = 5;             // 是否删除 0否 1是
+  int64 status = 6;                // 状态 1公开 2私密
+  int64 created_at = 7;            // 创建时间（时间戳，毫秒）
+  int64 updated_at = 8;            // 更新时间（时间戳，毫秒）
+  int64 photo_count = 9;           // 照片数量
+}
+
+// ============================================
+// 照片管理
+// ============================================
+
+message ListPhotosRequest {
+  ListQuery list_query = 1;        // 分页参数
+  int64 album_id = 2;              // 相册ID
+  optional int64 is_delete = 3;    // 是否删除 0否 1是
+}
+
+message ListPhotosResponse {
+  ListResult list_result = 1;      // 分页结果
+  repeated Photo list = 2;         // 照片列表
+}
+
+message CreatePhotoRequest {
+  int64 album_id = 1;              // 相册ID
+  string photo_name = 2;           // 照片名
+  string photo_desc = 3;           // 照片描述
+  string photo_src = 4;            // 照片地址
+}
+
+message CreatePhotoResponse {
+  int64 id = 1;                    // 照片ID
+}
+
+message UpdatePhotoRequest {
+  int64 id = 1;                    // 主键
+  int64 album_id = 2;              // 相册ID
+  string photo_name = 3;           // 照片名
+  string photo_desc = 4;           // 照片描述
+  string photo_src = 5;            // 照片地址
+}
+
+message UpdatePhotoResponse {
+  bool success = 1;
+}
+
+message BatchPatchPhotosRequest {
+  repeated int64 ids = 1;          // 照片ID列表
+  int64 is_delete = 2;             // 是否删除 0否 1是
+}
+
+message BatchPatchPhotosResponse {
+  int64 success_count = 1;
+}
+
+message BatchDestroyPhotosRequest {
+  repeated int64 ids = 1;          // 照片ID列表
+}
+
+message BatchDestroyPhotosResponse {
+  int64 success_count = 1;
+}
+
+// ============================================
+// 相册管理
+// ============================================
+
+message ListAlbumsRequest {
+  ListQuery list_query = 1;        // 分页参数
+  optional string album_name = 2;  // 相册名
+  optional int64 is_delete = 3;    // 是否删除 0否 1是
+}
+
+message ListAlbumsResponse {
+  ListResult list_result = 1;      // 分页结果
+  repeated Album list = 2;         // 相册列表
+}
+
+message GetAlbumRequest {
+  int64 id = 1;                    // 相册ID
+}
+
+message GetAlbumResponse {
+  Album album = 1;                 // 相册详情
+}
+
+message CreateAlbumRequest {
+  string album_name = 1;           // 相册名
+  string album_desc = 2;           // 相册描述
+  string album_cover = 3;          // 相册封面
+  int64 status = 4;                // 状态 1公开 2私密
+}
+
+message CreateAlbumResponse {
+  int64 id = 1;                    // 相册ID
+}
+
+message UpdateAlbumRequest {
+  int64 id = 1;                    // 主键
+  string album_name = 2;           // 相册名
+  string album_desc = 3;           // 相册描述
+  string album_cover = 4;          // 相册封面
+  int64 status = 5;                // 状态 1公开 2私密
+}
+
+message UpdateAlbumResponse {
+  bool success = 1;
+}
+
+message BatchPatchAlbumsRequest {
+  repeated int64 ids = 1;          // 相册ID列表
+  int64 is_delete = 2;             // 是否删除 0否 1是
+}
+
+message BatchPatchAlbumsResponse {
+  int64 success_count = 1;
+}
+
+message BatchDestroyAlbumsRequest {
+  repeated int64 ids = 1;          // 相册ID列表
+}
+
+message BatchDestroyAlbumsResponse {
+  int64 success_count = 1;
+}
+
+// ============================================
+// 服务定义
+// ============================================
+
+service MediaService {
+  // ==================== 照片管理 ====================
+
+  // 分页查询照片列表
+  rpc ListPhotos(ListPhotosRequest) returns (ListPhotosResponse);
+  // 创建照片
+  rpc CreatePhoto(CreatePhotoRequest) returns (CreatePhotoResponse);
+  // 更新照片
+  rpc UpdatePhoto(UpdatePhotoRequest) returns (UpdatePhotoResponse);
+  // 部分更新照片
+  rpc BatchPatchPhotos(BatchPatchPhotosRequest) returns (BatchPatchPhotosResponse);
+  // 批量销毁照片（彻底删除，不可恢复）
+  rpc BatchDestroyPhotos(BatchDestroyPhotosRequest) returns (BatchDestroyPhotosResponse);
+
+  // ==================== 相册管理 ====================
+
+  // 分页查询相册列表
+  rpc ListAlbums(ListAlbumsRequest) returns (ListAlbumsResponse);
+  // 查询相册详情
+  rpc GetAlbum(GetAlbumRequest) returns (GetAlbumResponse);
+  // 创建相册
+  rpc CreateAlbum(CreateAlbumRequest) returns (CreateAlbumResponse);
+  // 更新相册
+  rpc UpdateAlbum(UpdateAlbumRequest) returns (UpdateAlbumResponse);
+  // 部分更新相册
+  rpc BatchPatchAlbums(BatchPatchAlbumsRequest) returns (BatchPatchAlbumsResponse);
+  // 批量销毁相册（彻底删除，不可恢复）
+  rpc BatchDestroyAlbums(BatchDestroyAlbumsRequest) returns (BatchDestroyAlbumsResponse);
+}

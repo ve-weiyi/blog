@@ -18,21 +18,24 @@
 
 ```json
 {
-    "code": "<int>",
-    "msg":  "<string>",
-    "data": "<object>"
+    "code":     "<string>",
+    "message":  "<string>",
+    "data":     "<object>",
+    "trace_id": "<string>"
 }
 ```
 
-- 成功：`code = 200`
-- 错误：`code` 为具体错误码，`msg` 为错误描述
+- 成功：`code = "SUCCESS"`
+- 错误：`code` 为业务错误标识，取值见 [`docs/design/07-BLOG-错误码与中间件.md`](../../docs/design/07-BLOG-错误码与中间件.md) §1.4；`message` 为错误描述
+- `data` 成败都必须存在，失败时为空对象
+- HTTP 状态码由 `code` 在响应出口派生，**logic 与中间件都只产出 `code`**，不产出 HTTP 状态码
 
 ## API 修改流程
 
 **不可跳步，必须按顺序执行：**
 
 ```
-1. 修改 protocol/api/<service>.api（HTTP 网关）或 protocol/proto/<service>.proto（gRPC）
+1. 修改 protocol/api/<service>/<service>.api（HTTP 网关）或 protocol/proto/<service>/<domain>.proto（gRPC）
 2. 运行对应 generate.sh 重新生成代码
 3. 修改 types 定义（如有自定义类型）
 4. 修改 logic 层实现业务逻辑

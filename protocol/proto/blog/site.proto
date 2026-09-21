@@ -1,0 +1,192 @@
+syntax = "proto3";
+
+package blog.site.v1;
+
+option go_package = "./siterpc";
+
+// ============================================
+// 通用消息定义
+// ============================================
+
+message ListQuery {
+  int64 page = 1;                  // 当前页码
+  int64 page_size = 2;             // 每页数量
+  repeated string sorts = 3;       // 排序字段（格式：字段名+空格+asc/desc，如 "created_at desc"）
+}
+
+message ListResult {
+  int64 page = 1;                  // 当前页码
+  int64 page_size = 2;             // 每页数量
+  int64 total = 3;                 // 总数
+}
+
+// ============================================
+// 站点配置
+// ============================================
+
+message GetConfigRequest {
+  string config_key = 1;           // 配置键
+}
+
+message GetConfigResponse {
+  string config_value = 1;         // 配置值
+}
+
+message SaveConfigRequest {
+  string config_key = 1;           // 配置键
+  string config_value = 2;         // 配置值
+}
+
+message SaveConfigResponse {
+  bool success = 1;
+}
+
+// ============================================
+// 页面管理
+// ============================================
+
+// 页面
+message Page {
+  int64 id = 1;                    // 页面ID
+  string page_name = 2;            // 页面名
+  string page_label = 3;           // 页面标签
+  string page_cover = 4;           // 页面封面
+  int64 is_carousel = 5;           // 是否轮播 0否 1是
+  repeated string carousel_covers = 6; // 轮播封面列表
+  int64 created_at = 7;            // 创建时间（时间戳，毫秒）
+  int64 updated_at = 8;            // 更新时间（时间戳，毫秒）
+}
+
+message ListPagesRequest {
+  ListQuery list_query = 1;        // 分页参数
+  optional string page_name = 2;   // 页面名
+}
+
+message ListPagesResponse {
+  ListResult list_result = 1;      // 分页结果
+  repeated Page list = 2;          // 页面列表
+}
+
+message CreatePageRequest {
+  string page_name = 1;            // 页面名
+  string page_label = 2;           // 页面标签
+  string page_cover = 3;           // 页面封面
+  int64 is_carousel = 4;           // 是否轮播 0否 1是
+  repeated string carousel_covers = 5; // 轮播封面列表
+}
+
+message CreatePageResponse {
+  int64 id = 1;                    // 页面ID
+}
+
+message UpdatePageRequest {
+  int64 id = 1;                    // 页面ID
+  string page_name = 2;            // 页面名
+  string page_label = 3;           // 页面标签
+  string page_cover = 4;           // 页面封面
+  int64 is_carousel = 5;           // 是否轮播 0否 1是
+  repeated string carousel_covers = 6; // 轮播封面列表
+}
+
+message UpdatePageResponse {
+  bool success = 1;
+}
+
+message BatchDeletePagesRequest {
+  repeated int64 ids = 1;          // 页面ID列表
+}
+
+message BatchDeletePagesResponse {
+  int64 success_count = 1;
+}
+
+// ============================================
+// 友链管理
+// ============================================
+
+// 友链
+message Friend {
+  int64 id = 1;                    // 友链ID
+  string link_name = 2;            // 链接名
+  string link_avatar = 3;          // 链接头像
+  string link_address = 4;         // 链接地址
+  string link_intro = 5;           // 链接介绍
+  int64 created_at = 6;            // 创建时间（时间戳，毫秒）
+  int64 updated_at = 7;            // 更新时间（时间戳，毫秒）
+}
+
+message ListFriendsRequest {
+  ListQuery list_query = 1;        // 分页参数
+  optional string link_name = 2;   // 链接名
+}
+
+message ListFriendsResponse {
+  ListResult list_result = 1;      // 分页结果
+  repeated Friend list = 2;        // 友链列表
+}
+
+message CreateFriendRequest {
+  string link_name = 1;            // 链接名
+  string link_avatar = 2;          // 链接头像
+  string link_address = 3;         // 链接地址
+  string link_intro = 4;           // 链接介绍
+}
+
+message CreateFriendResponse {
+  int64 id = 1;                    // 友链ID
+}
+
+message UpdateFriendRequest {
+  int64 id = 1;                    // 友链ID
+  string link_name = 2;            // 链接名
+  string link_avatar = 3;          // 链接头像
+  string link_address = 4;         // 链接地址
+  string link_intro = 5;           // 链接介绍
+}
+
+message UpdateFriendResponse {
+  bool success = 1;
+}
+
+message BatchDeleteFriendsRequest {
+  repeated int64 ids = 1;          // 友链ID列表
+}
+
+message BatchDeleteFriendsResponse {
+  int64 success_count = 1;
+}
+
+// ============================================
+// 服务定义
+// ============================================
+
+service SiteService {
+  // ==================== 站点配置 ====================
+
+  // 查询配置
+  rpc GetConfig(GetConfigRequest) returns (GetConfigResponse);
+  // 保存配置
+  rpc SaveConfig(SaveConfigRequest) returns (SaveConfigResponse);
+
+  // ==================== 页面管理 ====================
+
+  // 分页查询页面列表
+  rpc ListPages(ListPagesRequest) returns (ListPagesResponse);
+  // 创建页面
+  rpc CreatePage(CreatePageRequest) returns (CreatePageResponse);
+  // 更新页面
+  rpc UpdatePage(UpdatePageRequest) returns (UpdatePageResponse);
+  // 批量删除页面
+  rpc BatchDeletePages(BatchDeletePagesRequest) returns (BatchDeletePagesResponse);
+
+  // ==================== 友链管理 ====================
+
+  // 分页查询友链列表
+  rpc ListFriends(ListFriendsRequest) returns (ListFriendsResponse);
+  // 创建友链
+  rpc CreateFriend(CreateFriendRequest) returns (CreateFriendResponse);
+  // 更新友链
+  rpc UpdateFriend(UpdateFriendRequest) returns (UpdateFriendResponse);
+  // 批量删除友链
+  rpc BatchDeleteFriends(BatchDeleteFriendsRequest) returns (BatchDeleteFriendsResponse);
+}

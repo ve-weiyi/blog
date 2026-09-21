@@ -2,6 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: etcd-pvc
+  namespace: blog
 spec:
   storageClassName: local-path
   accessModes:
@@ -14,6 +15,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: etcd
+  namespace: blog
 spec:
   clusterIP: None
   selector:
@@ -28,6 +30,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: etcd
+  namespace: blog
 spec:
   serviceName: etcd
   replicas: 1
@@ -41,7 +44,7 @@ spec:
     spec:
       containers:
         - name: etcd
-          image: rancher/etcd:v3.4.13
+          image: quay.io/coreos/etcd:v3.5.17
           command:
             - etcd
             - --name=etcd
@@ -52,8 +55,13 @@ spec:
             - --initial-advertise-peer-urls=http://etcd:2380
             - --initial-cluster=etcd=http://etcd:2380
           ports:
-            - containerPort: 2379
-            - containerPort: 2380
+            - name: client
+              containerPort: 2379
+            - name: peer
+              containerPort: 2380
+          env:
+            - name: TZ
+              value: Asia/Shanghai
           volumeMounts:
             - name: data
               mountPath: /var/lib/etcd

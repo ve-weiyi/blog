@@ -1,0 +1,173 @@
+syntax = "v1"
+
+import "types.api"
+
+// ==================== 评论管理 ====================
+type (
+	CommentVO {
+		Id             int64        `json:"id"`
+		UserId         string       `json:"user_id"`
+		DeviceId       string       `json:"device_id"`
+		Type           int64        `json:"type"`
+		TopicTitle     string       `json:"topic_title"`
+		ReplyUserId    string       `json:"reply_user_id"`
+		CommentContent string       `json:"comment_content"`
+		Status         int64        `json:"status"`
+		CreatedAt      int64        `json:"created_at"`
+		GuestInfo      *GuestInfoVO `json:"guest_info"`
+		UserInfo       *UserInfoVO  `json:"user_info"`
+		ReplyUserInfo  *UserInfoVO  `json:"reply_user_info"`
+	}
+	QueryCommentListReq {
+		ListQuery
+		UserId *string `json:"user_id,optional"`
+		Status *int64  `json:"status,optional"`
+		Type   *int64  `json:"type,optional"`
+	}
+	PatchCommentsReq {
+		Ids    []int64 `json:"ids"`
+		Status int64   `json:"status"`
+	}
+	DeleteCommentReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "评论管理"
+	prefix:     /admin-api/v1
+	group:      discussion/comment
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取评论列表(后台)"
+	@handler QueryCommentList
+	get /comments (QueryCommentListReq) returns (ListResult)
+
+	@doc "部分更新评论（批量）"
+	@handler PatchComments
+	patch /comments (PatchCommentsReq) returns (BatchResp)
+
+	@doc "批量删除评论"
+	@handler BatchDeleteComment
+	post /comments/batch-delete (DeleteCommentReq) returns (BatchResp)
+}
+
+// ==================== 留言管理 ====================
+type (
+	MessageVO {
+		Id             int64        `json:"id,optional"`
+		UserId         string       `json:"user_id"`
+		DeviceId       string       `json:"device_id"`
+		MessageContent string       `json:"message_content"`
+		Status         int64        `json:"status"`
+		CreatedAt      int64        `json:"created_at"`
+		UpdatedAt      int64        `json:"updated_at"`
+		UserInfo       *UserInfoVO  `json:"user_info"`
+		GuestInfo      *GuestInfoVO `json:"guest_info"`
+	}
+	QueryMessageListReq {
+		ListQuery
+		UserId *string `json:"user_id,optional"`
+		Status *int64  `json:"status,optional"`
+	}
+	PatchMessagesReq {
+		Ids    []int64 `json:"ids"`
+		Status int64   `json:"status"`
+	}
+	DeleteMessageReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "留言管理"
+	prefix:     /admin-api/v1
+	group:      discussion/message
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取留言列表"
+	@handler QueryMessageList
+	get /messages (QueryMessageListReq) returns (ListResult)
+
+	@doc "部分更新留言（批量）"
+	@handler PatchMessages
+	patch /messages (PatchMessagesReq) returns (BatchResp)
+
+	@doc "批量删除留言"
+	@handler BatchDeleteMessage
+	post /messages/batch-delete (DeleteMessageReq) returns (BatchResp)
+}
+
+// ==================== 说说管理 ====================
+type (
+	TalkVO {
+		Id           int64       `json:"id,optional"`
+		UserId       string      `json:"user_id"`
+		Content      string      `json:"content"`
+		ImgList      []string    `json:"img_list"`
+		IsTop        int64       `json:"is_top"`
+		Status       int64       `json:"status"`
+		LikeCount    int64       `json:"like_count"`
+		CommentCount int64       `json:"comment_count"`
+		CreatedAt    int64       `json:"created_at"`
+		UpdatedAt    int64       `json:"updated_at"`
+		UserInfo     *UserInfoVO `json:"user_info"`
+	}
+	CreateTalkReq {
+		Content string   `json:"content"`
+		ImgList []string `json:"img_list"`
+		IsTop   int64    `json:"is_top"`
+		Status  int64    `json:"status"`
+	}
+	UpdateTalkReq {
+		Id      int64    `path:"id"`
+		Content string   `json:"content"`
+		ImgList []string `json:"img_list"`
+		IsTop   int64    `json:"is_top"`
+		Status  int64    `json:"status"`
+	}
+	QueryTalkListReq {
+		ListQuery
+		Status *int64 `json:"status,optional"`
+	}
+	GetTalkReq {
+		Id int64 `path:"id"`
+	}
+	DeleteTalkReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "说说管理"
+	prefix:     /admin-api/v1
+	group:      discussion/talk
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取说说列表"
+	@handler QueryTalkList
+	get /talks (QueryTalkListReq) returns (ListResult)
+
+	@doc "创建说说"
+	@handler CreateTalk
+	post /talks (CreateTalkReq) returns (TalkVO)
+
+	@doc "更新说说"
+	@handler UpdateTalk
+	put /talks/:id (UpdateTalkReq) returns (TalkVO)
+
+	@doc "获取说说详情"
+	@handler GetTalk
+	get /talks/:id (GetTalkReq) returns (TalkVO)
+
+	@doc "批量删除说说"
+	@handler BatchDeleteTalk
+	post /talks/batch-delete (DeleteTalkReq) returns (BatchResp)
+}
+

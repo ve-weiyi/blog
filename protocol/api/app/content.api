@@ -1,0 +1,154 @@
+syntax = "v1"
+
+import "types.api"
+
+// ==================== 文章结构体 ====================
+type (
+	ArticleHome {
+		Id             int64    `json:"id"`
+		ArticleCover   string   `json:"article_cover"`
+		ArticleTitle   string   `json:"article_title"`
+		ArticleContent string   `json:"article_content"`
+		ArticleType    int64    `json:"article_type"`
+		OriginalUrl    string   `json:"original_url"`
+		IsTop          int64    `json:"is_top"`
+		Status         int64    `json:"status"`
+		CreatedAt      int64    `json:"created_at"`
+		UpdatedAt      int64    `json:"updated_at"`
+		CategoryName   string   `json:"category_name"`
+		TagNameList    []string `json:"tag_name_list"`
+		LikeCount      int64    `json:"like_count"`
+		ViewCount      int64    `json:"view_count"`
+	}
+	ArticlePreview {
+		Id           int64  `json:"id"`
+		ArticleCover string `json:"article_cover"`
+		ArticleTitle string `json:"article_title"`
+		LikeCount    int64  `json:"like_count"`
+		ViewCount    int64  `json:"view_count"`
+		CreatedAt    int64  `json:"created_at"`
+	}
+	ArticleDetails {
+		ArticleHome
+		Author               *UserInfoVO       `json:"author"`
+		LastArticle          *ArticlePreview   `json:"last_article"`
+		NextArticle          *ArticlePreview   `json:"next_article"`
+		RecommendArticleList []*ArticlePreview `json:"recommend_article_list"`
+		NewestArticleList    []*ArticlePreview `json:"newest_article_list"`
+	}
+	// 列表查询（按你的规范命名）
+	QueryArticleListReq {
+		ListQuery
+		ArticleTitle *string `json:"article_title,optional"`
+		CategoryName *string `json:"category_name,optional"`
+		TagName      *string `json:"tag_name,optional"`
+	}
+	// 推荐文章查询
+	QueryRecommendArticleListReq  {}
+	// 归档文章查询
+	QueryArchivedArticleListReq {
+		ListQuery
+	}
+	GetArticleReq {
+		ArticleId int64 `path:"id"`
+	}
+	LikeArticleReq {
+		ArticleId int64 `path:"id"`
+	}
+)
+
+// ==================== 文章公开接口 ====================
+@server (
+	tags:     "文章"
+	prefix:   /api/v1
+	group:    content/article
+	authType: apiKey
+)
+service app-api {
+	@doc "获取推荐文章列表"
+	@handler QueryRecommendArticleList
+	get /articles/recommended (QueryRecommendArticleListReq) returns (ListResult)
+
+	@doc "获取归档文章列表"
+	@handler QueryArchivedArticleList
+	get /articles/archived (QueryArchivedArticleListReq) returns (ListResult)
+
+	@doc "获取文章列表"
+	@handler QueryArticleList
+	get /articles (QueryArticleListReq) returns (ListResult)
+
+	@doc "获取文章详情"
+	@handler GetArticle
+	get /articles/:id (GetArticleReq) returns (ArticleDetails)
+}
+
+// ==================== 需要登录：点赞文章 ====================
+@server (
+	tags:       "文章"
+	prefix:     /api/v1
+	group:      content/article
+	authType:   apiKey
+	middleware: UserAuth
+)
+service app-api {
+	@doc "点赞文章"
+	@handler LikeArticle
+	post /articles/:id/like (LikeArticleReq) returns (EmptyResp)
+}
+
+// ==================== 分类结构体 ====================
+type (
+	Category {
+		Id           int64  `json:"id"`
+		CategoryName string `json:"category_name"`
+		ArticleCount int64  `json:"article_count"`
+		CreatedAt    int64  `json:"created_at"`
+		UpdatedAt    int64  `json:"updated_at"`
+	}
+	QueryCategoryListReq {
+		ListQuery
+		CategoryName *string `json:"category_name,optional"`
+	}
+)
+
+// ==================== 分类接口 ====================
+@server (
+	tags:     "分类"
+	prefix:   /api/v1
+	group:    content/category
+	authType: apiKey
+)
+service app-api {
+	@doc "获取分类列表"
+	@handler QueryCategoryList
+	get /categories (QueryCategoryListReq) returns (ListResult)
+}
+
+// ==================== 标签结构体 ====================
+type (
+	Tag {
+		Id           int64  `json:"id"`
+		TagName      string `json:"tag_name"`
+		ArticleCount int64  `json:"article_count"`
+		CreatedAt    int64  `json:"created_at"`
+		UpdatedAt    int64  `json:"updated_at"`
+	}
+	QueryTagListReq {
+		ListQuery
+		TagName *string `json:"tag_name,optional"`
+	}
+)
+
+// ==================== 标签接口 ====================
+@server (
+	tags:     "标签"
+	prefix:   /api/v1
+	group:    content/tag
+	authType: apiKey
+)
+service app-api {
+	@doc "获取标签列表"
+	@handler QueryTagList
+	get /tags (QueryTagListReq) returns (ListResult)
+}
+

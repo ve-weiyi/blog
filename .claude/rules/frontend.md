@@ -25,7 +25,7 @@ src/
 ├── api/            # API 接口定义，按模块分文件
 ├── views/          # 页面组件，按功能模块分目录
 ├── components/     # 公共组件
-├── hooks/          # 组合函数（composables）
+├── composables/    # 组合函数
 ├── stores/         # Pinia store
 ├── router/         # 路由配置
 ├── utils/          # 工具函数（request.ts、storage.ts 等）
@@ -43,11 +43,15 @@ src/
 
 ```typescript
 interface ApiResponse<T> {
-  code: number;
-  msg: string;
+  code: string;
+  message: string;
   data: T;
+  trace_id: string;
 }
 ```
+
+- `code` 为业务错误标识，客户端**只判断 `code`，不判断 `message` 文案**；取值见 [`docs/design/07-BLOG-错误码与中间件.md`](../../docs/design/07-BLOG-错误码与中间件.md) §1.4，与 `blog-*/src/enums/api.ts` 的 `ApiCodeEnum` 一一对应
+- 分发**不依赖 HTTP 状态码**：HTTP 2xx 与非 2xx 的响应体都是信封，两个通道走同一条分发路径（见 §四）
 
 ### axios 拦截器
 

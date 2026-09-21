@@ -1,6 +1,17 @@
 name: Docker Build and Publish
 
+# 两种触发方式：
+#   push tag          —— 打 tag 即构建全部 5 个镜像，镜像标签为 tag 名 + latest，只构建不部署
+#                        git tag v5.0.1 && git push origin v5.0.1
+#   workflow_dispatch —— 按服务选择构建，可选顺带部署到服务器
+#
+# 部署目标（deploy_target，仅 workflow_dispatch 时生效）：
+#   docker —— SSH 到服务器执行 docker pull / stop / run（默认，即原有行为）
+#   k8s    —— SSH 到 k3s 节点执行 kubectl set image + rollout status
+# 各部署形态共用同一套镜像（ghcr.io/ve-weiyi/<service>），切换形态无需重建镜像。
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       services:
@@ -10,7 +21,7 @@ on:
         default: 'all'
         options:
           - all
-          - app-rpc
+          - blog-rpc
           - app-api
           - admin-api
           - app-web
@@ -23,11 +34,19 @@ on:
         options:
           - skip
           - all
-          - app-rpc
+          - blog-rpc
           - app-api
           - admin-api
           - app-web
           - admin-web
+      deploy_target:
+        description: 'Deployment target (ignored when deploy_services = skip)'
+        type: choice
+        required: true
+        default: 'docker'
+        options:
+          - docker
+          - k8s
 
 # Prevent concurrent deployments
 concurrency:
@@ -58,14 +77,20 @@ jobs:
           # backend  ：context 为仓库根，靠 service_dir 定位要构建的服务目录
           # frontend ：context 为该前端子模块目录，靠 dist_dir 定位构建产物
           ALL='[
-            {"service":"app-rpc",   "context":".",          "dockerfile":"./deploy/docker/backend/Dockerfile",  "service_dir":"blog-cloud/rpc/blog",  "type":"backend",  "port":"9120"},
+            {"service":"blog-rpc",  "context":".",          "dockerfile":"./deploy/docker/backend/Dockerfile",  "service_dir":"blog-cloud/rpc/blog",  "type":"backend",  "port":"9120"},
             {"service":"app-api",   "context":".",          "dockerfile":"./deploy/docker/backend/Dockerfile",  "service_dir":"blog-cloud/api/app",   "type":"backend",  "port":"9420"},
             {"service":"admin-api", "context":".",          "dockerfile":"./deploy/docker/backend/Dockerfile",  "service_dir":"blog-cloud/api/admin", "type":"backend",  "port":"9421"},
-            {"service":"app-web",   "context":"./blog-app", "dockerfile":"./deploy/docker/frontend/Dockerfile", "dist_dir":"dist/blog",  "proxy_pass":"blog.veweiyi.cn",  "type":"frontend", "port":"9521"},
-            {"service":"admin-web", "context":"./blog-admin","dockerfile":"./deploy/docker/frontend/Dockerfile", "dist_dir":"dist/admin", "proxy_pass":"admin.veweiyi.cn", "type":"frontend", "port":"9520"}
+            {"service":"app-web",   "context":"./blog-app", "dockerfile":"./deploy/docker/frontend/Dockerfile", "dist_dir":"dist/blog",  "proxy_pass":"app.veweiyi.cn",  "type":"frontend", "port":"9520"},
+            {"service":"admin-web", "context":"./blog-admin","dockerfile":"./deploy/docker/frontend/Dockerfile", "dist_dir":"dist/admin", "proxy_pass":"admin.veweiyi.cn", "type":"frontend", "port":"9521"}
           ]'
 
-          INPUT="${{ github.event.inputs.services }}"
+          # tag 推送没有 services 输入，固定构建全部服务
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            INPUT="${{ github.event.inputs.services }}"
+          else
+            INPUT="all"
+          fi
+
           if [ "$INPUT" = "all" ]; then
             MATRIX_JSON=$(echo "$ALL" | jq -c '.')
             echo "Build: all 5 services"
@@ -75,7 +100,13 @@ jobs:
           fi
           echo "matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
 
-          DEPLOY_INPUT="${{ github.event.inputs.deploy_services }}"
+          # tag 推送只构建不部署，deploy_matrix 固定为空
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            DEPLOY_INPUT="${{ github.event.inputs.deploy_services }}"
+          else
+            DEPLOY_INPUT="skip"
+          fi
+
           if [ "$DEPLOY_INPUT" = "skip" ]; then
             echo "deploy_matrix=[]" >> $GITHUB_OUTPUT
             echo "Deploy: skipped"
@@ -125,11 +156,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/blog-${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.service }}
+          # 手动触发（默认分支）：main、main-<sha>、latest
+          # tag 推送：标签即 tag 名（如 v5.0.1），并同样产出 latest
+          # {{branch}} 在 tag 事件下为空串，故 sha 标签限定 branch 事件
+          # {{is_default_branch}} 在 tag 事件下恒为 false，故 latest 需显式判断
           tags: |
             type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix={{branch}}-,enable=${{ github.ref_type == 'branch' }}
+            type=ref,event=tag
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' || github.ref_name == github.event.repository.default_branch }}
 
       - name: Build and push Docker image
         id: build
@@ -154,18 +190,19 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Service:** \`${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Type:** \`${{ matrix.type }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/blog-${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
 
-  deploy:
-    name: Deploy ${{ matrix.service }}
+  deploy-docker:
+    name: Deploy ${{ matrix.service }} (docker)
     runs-on: ubuntu-latest
     needs: [prepare, build-and-push]
-    if: github.event.inputs.deploy_services != 'skip'
+    # 仅手动触发、显式选择了部署服务、且目标为 docker 时才部署；tag 推送只构建
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_services != 'skip' && github.event.inputs.deploy_target == 'docker'
     strategy:
       fail-fast: false
       matrix:
@@ -199,8 +236,8 @@ jobs:
           script: |
             set -e
 
-            CONTAINER_NAME="blog-${SERVICE}"
-            IMAGE_TAG="${REGISTRY}/${IMAGE_NAMESPACE}/blog-${SERVICE}:latest"
+            CONTAINER_NAME="${SERVICE}"
+            IMAGE_TAG="${REGISTRY}/${IMAGE_NAMESPACE}/${SERVICE}:latest"
 
             echo "=== Deployment Started ==="
             echo "Service: ${CONTAINER_NAME}"
@@ -260,3 +297,60 @@ jobs:
           echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
           echo "**Port:** ${{ matrix.port }}" >> $GITHUB_STEP_SUMMARY
           echo "**Status:** Deployed successfully" >> $GITHUB_STEP_SUMMARY
+
+  deploy-k8s:
+    name: Deploy ${{ matrix.service }} (k8s)
+    runs-on: ubuntu-latest
+    needs: [prepare, build-and-push]
+    # 与 deploy-docker 互斥：触发条件相同，但目标为 k8s
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_services != 'skip' && github.event.inputs.deploy_target == 'k8s'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.deploy_matrix) }}
+
+    environment:
+      name: production
+
+    steps:
+      # 经 SSH 在节点上执行 kubectl，而不是把 kubeconfig 存进 GitHub Secret ——
+      # k8s-config.yaml 含 system:masters 私钥（集群最高权限），不交给第三方托管。
+      # 前置：SSH 用户须为 root（k3s kubectl 读 /etc/rancher/k3s/k3s.yaml，该文件仅 root 可读）。
+      - name: Rollout on k3s node via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          SERVICE: ${{ matrix.service }}
+          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_NAMESPACE: ${{ env.IMAGE_NAMESPACE }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          envs: SERVICE,REGISTRY,IMAGE_NAMESPACE
+          script: |
+            set -e
+
+            IMAGE_TAG="${REGISTRY}/${IMAGE_NAMESPACE}/${SERVICE}:latest"
+
+            echo "=== Deployment Started ==="
+            echo "Service: ${SERVICE}"
+            echo "Image: ${IMAGE_TAG}"
+            echo "Time: $(date)"
+
+            # Deployment 名与容器名均等于服务名，故 set image 的两侧相同。
+            # 镜像由节点经 ghcr-secret 拉取，此处无需 docker login。
+            k3s kubectl -n blog set image deployment/"${SERVICE}" "${SERVICE}=${IMAGE_TAG}"
+
+            echo "Waiting for rollout..."
+            k3s kubectl -n blog rollout status deployment/"${SERVICE}" --timeout=180s
+
+            echo "=== Deployment Completed ==="
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "## Deployment Summary - ${{ matrix.service }} :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** \`${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Target:** k3s" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Rolled out successfully" >> $GITHUB_STEP_SUMMARY

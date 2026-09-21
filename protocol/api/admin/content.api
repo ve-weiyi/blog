@@ -1,0 +1,209 @@
+syntax = "v1"
+
+import "types.api"
+
+// ==================== 文章管理 ====================
+type (
+	ArticleVO {
+		Id             int64    `json:"id,optional"`
+		ArticleCover   string   `json:"article_cover"`
+		ArticleTitle   string   `json:"article_title"`
+		ArticleContent string   `json:"article_content"`
+		ArticleType    int64    `json:"article_type"`
+		OriginalUrl    string   `json:"original_url"`
+		IsTop          int64    `json:"is_top"`
+		IsDelete       int64    `json:"is_delete"`
+		Status         int64    `json:"status"`
+		CreatedAt      int64    `json:"created_at"`
+		UpdatedAt      int64    `json:"updated_at"`
+		CategoryName   string   `json:"category_name"`
+		TagNameList    []string `json:"tag_name_list"`
+		LikeCount      int64    `json:"like_count"`
+		ViewCount      int64    `json:"view_count"`
+	}
+	CreateArticleReq {
+		ArticleCover   string   `json:"article_cover"`
+		ArticleTitle   string   `json:"article_title"`
+		ArticleContent string   `json:"article_content"`
+		ArticleType    int64    `json:"article_type"`
+		OriginalUrl    string   `json:"original_url"`
+		IsTop          int64    `json:"is_top"`
+		Status         int64    `json:"status"`
+		CategoryName   string   `json:"category_name,optional"`
+		TagNameList    []string `json:"tag_name_list,optional"`
+	}
+	UpdateArticleReq {
+		Id             int64    `path:"id"`
+		ArticleCover   string   `json:"article_cover"`
+		ArticleTitle   string   `json:"article_title"`
+		ArticleContent string   `json:"article_content"`
+		ArticleType    int64    `json:"article_type"`
+		OriginalUrl    string   `json:"original_url"`
+		IsTop          int64    `json:"is_top"`
+		Status         int64    `json:"status"`
+		CategoryName   string   `json:"category_name,optional"`
+		TagNameList    []string `json:"tag_name_list,optional"`
+	}
+	PatchArticleReq {
+		Id       int64  `path:"id"`
+		IsDelete *int64 `json:"is_delete,optional"`
+		IsTop    *int64 `json:"is_top,optional"`
+	}
+	GetArticleReq {
+		Id int64 `path:"id"`
+	}
+	DeleteArticleReq {
+		Id int64 `path:"id"`
+	}
+	ExportArticleReq {
+		Ids []int64 `json:"ids"`
+	}
+	QueryArticleListReq {
+		ListQuery
+		ArticleTitle *string `json:"article_title,optional"`
+		ArticleType  *int64  `json:"article_type,optional"`
+		IsTop        *int64  `json:"is_top,optional"`
+		IsDelete     *int64  `json:"is_delete,optional"`
+		Status       *int64  `json:"status,optional"`
+		CategoryName *string `json:"category_name,optional"`
+		TagName      *string `json:"tag_name,optional"`
+	}
+)
+
+@server (
+	tags:       "文章管理"
+	prefix:     /admin-api/v1
+	group:      content/article
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取文章列表"
+	@handler QueryArticleList
+	get /articles (QueryArticleListReq) returns (ListResult)
+
+	@doc "导出文章列表"
+	@handler ExportArticle
+	post /articles/export (ExportArticleReq) returns (EmptyResp)
+
+	@doc "创建文章"
+	@handler CreateArticle
+	post /articles (CreateArticleReq) returns (ArticleVO)
+
+	@doc "获取文章详情"
+	@handler GetArticle
+	get /articles/:id (GetArticleReq) returns (ArticleVO)
+
+	@doc "更新文章"
+	@handler UpdateArticle
+	put /articles/:id (UpdateArticleReq) returns (ArticleVO)
+
+	@doc "删除文章"
+	@handler DeleteArticle
+	delete /articles/:id (DeleteArticleReq) returns (BatchResp)
+
+	@doc "部分更新文章（置顶状态 / 删除状态）"
+	@handler PatchArticle
+	patch /articles/:id (PatchArticleReq) returns (EmptyResp)
+}
+
+// ==================== 分类管理 ====================
+type (
+	CategoryVO {
+		Id           int64  `json:"id,optional"`
+		CategoryName string `json:"category_name"`
+		ArticleCount int64  `json:"article_count"`
+		CreatedAt    int64  `json:"created_at"`
+		UpdatedAt    int64  `json:"updated_at"`
+	}
+	QueryCategoryListReq {
+		ListQuery
+		CategoryName *string `json:"category_name,optional"`
+	}
+	CreateCategoryReq {
+		CategoryName string `json:"category_name"`
+	}
+	UpdateCategoryReq {
+		Id           int64  `path:"id"`
+		CategoryName string `json:"category_name"`
+	}
+	DeleteCategoryReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "分类管理"
+	prefix:     /admin-api/v1
+	group:      content/category
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取分类列表"
+	@handler QueryCategoryList
+	get /categories (QueryCategoryListReq) returns (ListResult)
+
+	@doc "创建分类"
+	@handler CreateCategory
+	post /categories (CreateCategoryReq) returns (CategoryVO)
+
+	@doc "更新分类"
+	@handler UpdateCategory
+	put /categories/:id (UpdateCategoryReq) returns (CategoryVO)
+
+	@doc "批量删除分类"
+	@handler BatchDeleteCategory
+	post /categories/batch-delete (DeleteCategoryReq) returns (BatchResp)
+}
+
+// ==================== 标签管理 ====================
+type (
+	TagVO {
+		Id           int64  `json:"id,optional"`
+		TagName      string `json:"tag_name"`
+		ArticleCount int64  `json:"article_count"`
+		CreatedAt    int64  `json:"created_at"`
+		UpdatedAt    int64  `json:"updated_at"`
+	}
+	QueryTagListReq {
+		ListQuery
+		TagName *string `json:"tag_name,optional"`
+	}
+	CreateTagReq {
+		TagName string `json:"tag_name"`
+	}
+	UpdateTagReq {
+		Id      int64  `path:"id"`
+		TagName string `json:"tag_name"`
+	}
+	DeleteTagReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "标签管理"
+	prefix:     /admin-api/v1
+	group:      content/tag
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取标签列表"
+	@handler QueryTagList
+	get /tags (QueryTagListReq) returns (ListResult)
+
+	@doc "创建标签"
+	@handler CreateTag
+	post /tags (CreateTagReq) returns (TagVO)
+
+	@doc "更新标签"
+	@handler UpdateTag
+	put /tags/:id (UpdateTagReq) returns (TagVO)
+
+	@doc "批量删除标签"
+	@handler BatchDeleteTag
+	post /tags/batch-delete (DeleteTagReq) returns (BatchResp)
+}
+

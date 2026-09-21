@@ -21,7 +21,7 @@ RUN npm run build
 FROM nginx:stable-alpine AS production-stage
 
 ARG DIST_DIR
-# 接口反向代理目标：blog-admin -> admin.veweiyi.cn   blog-app -> blog.veweiyi.cn
+# 接口反向代理目标：blog-admin -> admin.veweiyi.cn   blog-app -> app.veweiyi.cn
 ARG PROXY_PASS
 
 # 内嵌 nginx 配置，避免跨构建上下文 COPY

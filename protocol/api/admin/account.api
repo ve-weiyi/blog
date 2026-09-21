@@ -1,0 +1,509 @@
+syntax = "v1"
+
+import "types.api"
+
+type (
+	GetCaptchaReq {
+		Width  int64 `form:"width,optional"` // 宽度
+		Height int64 `form:"height,optional"` // 高度
+	}
+	GetCaptchaResp {
+		CaptchaKey    string `json:"captcha_key"` // 验证码key
+		CaptchaBase64 string `json:"captcha_base64"` // 验证码base64
+	}
+)
+
+@server (
+	tags:   "登录认证"
+	prefix: /admin-api/v1
+	group:  account/auth
+)
+service admin-api {
+	@doc "获取验证码"
+	@handler GetCaptcha
+	get /auth/captchas (GetCaptchaReq) returns (GetCaptchaResp)
+}
+
+type (
+	// 发送邮箱验证码
+	SendEmailCodeReq {
+		Email string `json:"email"` // 邮箱
+		Type  string `json:"type"` // login / register / reset_password / bind_email
+	}
+	SendEmailCodeResp  {}
+	// 发送手机验证码
+	SendMobileCodeReq {
+		Mobile string `json:"mobile"` // 手机号
+		Type   string `json:"type"` // login / reset_password / bind_phone
+	}
+	SendMobileCodeResp  {}
+	// 登录响应
+	LoginResp {
+		UserId   string `json:"user_id"` // 用户id
+		UserType string `json:"user_type"` // 用户类型：user-普通用户 admin-管理员
+		Scope    string `json:"scope"` // 作用域
+		Token    *Token `json:"token"`
+	}
+	Token {
+		TokenType        string `json:"token_type"` // Token 类型（如 "Bearer"）
+		AccessToken      string `json:"access_token"` // 访问令牌：用于接口访问，有效期短
+		ExpiresIn        int64  `json:"expires_in"` // AccessToken 有效期（秒），如 3600（1小时）
+		RefreshToken     string `json:"refresh_token"` // 刷新令牌：仅用于刷新 AccessToken，有效期长
+		RefreshExpiresIn int64  `json:"refresh_expires_in"` // RefreshToken 有效期（秒），如 604800（7天）
+		RefreshExpiresAt int64  `json:"refresh_expires_at"` // RefreshToken 过期时间戳（秒）
+	}
+	// 密码登录（账号/手机号/邮箱 + 密码）
+	PasswordLoginReq {
+		Account     string `json:"account"` // 账号/手机号/邮箱
+		Password    string `json:"password"` // 密码
+		CaptchaKey  string `json:"captcha_key,optional"` // 图形验证码key
+		CaptchaCode string `json:"captcha_code,optional"` // 图形验证码
+	}
+	// 邮箱验证码登录（仅登录，未注册报错）
+	EmailLoginReq {
+		Email string `json:"email"` // 邮箱
+		Code  string `json:"code"` // 验证码
+	}
+	// 手机验证码登录（自动注册）
+	MobileLoginReq {
+		Mobile string `json:"mobile"` // 手机号
+		Code   string `json:"code"` // 验证码
+	}
+	// 邮箱注册（必须设密码）
+	RegisterReq {
+		Email    string `json:"email"` // 邮箱
+		Password string `json:"password"` // 密码
+		Code     string `json:"code"` // 验证码
+		Username string `json:"username,optional"` // 用户名
+		Nickname string `json:"nickname,optional"` // 昵称
+	}
+	RegisterResp  {}
+	// 重置密码请求（免登录，通过验证码）
+	ResetPasswordReq {
+		Email           string `json:"email"` // 邮箱
+		Password        string `json:"password"` // 新密码
+		ConfirmPassword string `json:"confirm_password"` // 确认密码
+		Code            string `json:"code"` // 验证码
+	}
+	ResetPasswordResp  {}
+	// 第三方登录授权URL
+	GetOauthAuthorizeUrlReq {
+		Platform string `path:"platform"` // 平台
+		State    string `form:"state,optional"` // 状态
+	}
+	GetOauthAuthorizeUrlResp {
+		AuthorizeUrl string `json:"authorize_url"` // 授权地址
+	}
+	// 第三方登录（前端携带code）
+	OauthLoginReq {
+		Platform string `path:"platform"` // 平台
+		Code     string `json:"code"` // 授权码
+		State    string `json:"state,optional"` // 状态
+	}
+	RefreshTokenReq {
+		UserId       string `json:"user_id"` // 用户id
+		GrantType    string `json:"grant_type"` // 授权类型
+		RefreshToken string `json:"refresh_token"` // 刷新令牌
+	}
+)
+
+@server (
+	tags:       "登录认证"
+	prefix:     /admin-api/v1
+	group:      account/auth
+	middleware: RateLimit
+)
+service admin-api {
+	@doc "发送邮箱验证码"
+	@handler SendEmailCode
+	post /auth/email-verification-codes (SendEmailCodeReq) returns (SendEmailCodeResp)
+
+	@doc "发送手机验证码"
+	@handler SendMobileCode
+	post /auth/mobile-verification-codes (SendMobileCodeReq) returns (SendMobileCodeResp)
+
+	@doc "密码登录（账号/手机号/邮箱）"
+	@handler PasswordLogin
+	post /auth/login-by-password (PasswordLoginReq) returns (LoginResp)
+
+	@doc "邮箱验证码登录（仅登录）"
+	@handler EmailLogin
+	post /auth/login-by-email (EmailLoginReq) returns (LoginResp)
+
+	@doc "手机验证码登录（自动注册）"
+	@handler MobileLogin
+	post /auth/login-by-mobile (MobileLoginReq) returns (LoginResp)
+
+	@doc "邮箱注册"
+	@handler Register
+	post /auth/register (RegisterReq) returns (RegisterResp)
+
+	@doc "重置密码"
+	@handler ResetPassword
+	post /auth/password-resets (ResetPasswordReq) returns (ResetPasswordResp)
+
+	@doc "获取第三方授权URL"
+	@handler GetOauthAuthorizeUrl
+	get /auth/oauth/:platform/authorize (GetOauthAuthorizeUrlReq) returns (GetOauthAuthorizeUrlResp)
+
+	@doc "第三方登录（自动注册）"
+	@handler OauthLogin
+	post /auth/oauth/:platform/login (OauthLoginReq) returns (LoginResp)
+
+	@doc "刷新token"
+	@handler RefreshToken
+	post /auth/refresh-token (RefreshTokenReq) returns (LoginResp)
+}
+
+type (
+	LogoutReq  {}
+	LogoutResp  {}
+)
+
+@server (
+	tags:       "登录认证"
+	prefix:     /admin-api/v1
+	group:      account/auth
+	middleware: AdminAuth
+)
+service admin-api {
+	@doc "退出登录（需登录）"
+	@handler Logout
+	delete /auth/session (LogoutReq) returns (LogoutResp)
+}
+
+// ==================== 访客管理 ====================
+type (
+	GuestItem {
+		Id        int64  `json:"id,optional"`
+		DeviceId  string `json:"device_id"` // 设备ID
+		Os        string `json:"os"` // 操作系统
+		Browser   string `json:"browser"` // 浏览器
+		IpAddress string `json:"ip_address"` // IP地址
+		IpSource  string `json:"ip_source"` // IP归属地
+		CreatedAt int64  `json:"created_at"` // 创建时间
+		UpdatedAt int64  `json:"updated_at"` // 更新时间
+	}
+	QueryGuestListReq {
+		ListQuery
+		DeviceId *string `json:"device_id,optional"` // 设备ID
+		IpSource *string `json:"ip_source,optional"` // IP归属地
+	}
+	GetGuestReq  {}
+	GetGuestResp {
+		Id        int64  `json:"id"` // 访客唯一ID
+		DeviceId  string `json:"device_id"` // 设备ID
+		Os        string `json:"os"` // 操作系统
+		Browser   string `json:"browser"` // 浏览器
+		IpAddress string `json:"ip_address"` // IP地址
+		IpSource  string `json:"ip_source"` // IP归属地
+	}
+)
+
+@server (
+	tags:   "访客管理"
+	prefix: /admin-api/v1
+	group:  account/guest
+)
+service admin-api {
+	@doc "获取游客信息"
+	@handler GetGuest
+	get /guests/current (GetGuestReq) returns (GetGuestResp)
+}
+
+@server (
+	tags:       "访客管理"
+	prefix:     /admin-api/v1
+	group:      account/guest
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取访客列表"
+	@handler QueryGuestList
+	get /guests (QueryGuestListReq) returns (ListResult)
+}
+
+type (
+	UserProfile {
+		UserId     string                `json:"user_id"` // 用户ID（UUID）
+		Username   string                `json:"username"` // 用户名
+		Nickname   string                `json:"nickname"` // 真实姓名
+		Avatar     string                `json:"avatar"` // 头像
+		Email      string                `json:"email"` // 邮箱
+		Mobile     string                `json:"mobile"` // 手机号
+		Status     int64                 `json:"status"` // 状态：0-禁用 1-正常 2-冻结
+		CreatedAt  int64                 `json:"created_at"` // 创建时间（毫秒时间戳）
+		UpdatedAt  int64                 `json:"updated_at"` // 更新时间（毫秒时间戳）
+		ThirdParty []*UserThirdPartyInfo `json:"third_party"` // 第三方绑定
+		Roles      []string              `json:"roles"`
+		Perms      []string              `json:"perms"`
+		UserInfoExt
+	}
+	UserThirdPartyInfo {
+		Platform  string `json:"platform"` // 平台
+		OpenId    string `json:"open_id"` // 平台用户id
+		Nickname  string `json:"nickname"` // 昵称
+		Avatar    string `json:"avatar"` // 头像
+		CreatedAt int64  `json:"created_at"` // 创建时间
+	}
+	GetMeReq  {}
+	UpdateMeReq {
+		Nickname string `json:"nickname"`
+		Avatar   string `json:"avatar"` // 用户头像
+		UserInfoExt
+	}
+	UpdateMeAvatarReq {
+		Avatar string `json:"avatar"` // 头像
+	}
+	UpdateMePasswordReq {
+		OldPassword     string `json:"old_password"` // 旧密码
+		NewPassword     string `json:"new_password"` // 新密码
+		ConfirmPassword string `json:"confirm_password"` // 确认密码
+	}
+	BindMeEmailReq {
+		Email      string `json:"email"` // 邮箱
+		VerifyCode string `json:"verify_code"` // 验证码
+	}
+	BindMeMobileReq {
+		Mobile     string `json:"mobile"` // 手机号
+		VerifyCode string `json:"verify_code"` // 验证码
+	}
+	BindMeThirdPartyReq {
+		Platform string `json:"platform"` // 平台
+		Code     string `json:"code"` // 授权码
+		State    string `json:"state,optional"` // 状态
+	}
+	UnbindMeThirdPartyReq {
+		Platform string `json:"platform"` // 平台
+	}
+	QueryMeLoginLogListReq {
+		ListQuery
+	}
+)
+
+type (
+	UserRole {
+		Id          int64  `json:"id,optional"` // 主键id
+		ParentId    int64  `json:"parent_id"` // 父id
+		RoleKey     string `json:"role_key"` // 角色名
+		RoleLabel   string `json:"role_label"` // 角色标签
+		RoleComment string `json:"role_comment"` // 角色备注
+	}
+	UserMenu {
+		Id        int64        `json:"id,optional"` // 主键
+		ParentId  int64        `json:"parent_id"` // 父id
+		Path      string       `json:"path"` // 路由地址
+		Name      string       `json:"name"` // 路由名字
+		Component string       `json:"component"` // Layout组件
+		Redirect  string       `json:"redirect"` // 路由重定向
+		Meta      UserMenuMeta `json:"meta"` // meta配置
+		Children  []*UserMenu  `json:"children,optional"`
+		CreatedAt int64        `json:"created_at"` // 创建时间
+		UpdatedAt int64        `json:"updated_at"` // 更新时间
+	}
+	UserMenuMeta {
+		Title      string `json:"title,optional"`
+		Icon       string `json:"icon,optional"`
+		Hidden     bool   `json:"hidden,optional"`
+		AlwaysShow bool   `json:"alwaysShow,optional"`
+		Affix      bool   `json:"affix,optional"`
+		KeepAlive  bool   `json:"keepAlive,optional"`
+		Breadcrumb bool   `json:"breadcrumb,optional"`
+	}
+	UserApi {
+		Id        int64      `json:"id,optional"` // 主键id
+		ParentId  int64      `json:"parent_id"` // 父id
+		Name      string     `json:"name"` // api名称
+		Path      string     `json:"path"` // api路径
+		Method    string     `json:"method"` // api请求方法
+		CreatedAt int64      `json:"created_at"` // 创建时间
+		UpdatedAt int64      `json:"updated_at"` // 更新时间
+		Children  []*UserApi `json:"children"`
+	}
+	GetMeRolesResp {
+		List []*UserRole `json:"list"`
+	}
+	GetMeMenusResp {
+		List []*UserMenu `json:"list"`
+	}
+	GetMeApisResp {
+		List []*UserApi `json:"list"`
+	}
+)
+
+@server (
+	tags:       "个人中心"
+	prefix:     /admin-api/v1
+	group:      account/me
+	middleware: AdminAuth
+)
+service admin-api {
+	// ==================== 基础信息 ====================
+	@doc "获取当前用户信息"
+	@handler GetMe
+	get /me/profile (GetMeReq) returns (UserProfile)
+
+	@doc "更新当前用户信息"
+	@handler UpdateMe
+	put /me/profile (UpdateMeReq) returns (EmptyResp)
+
+	// ==================== 账号安全 ====================
+	@doc "修改用户头像"
+	@handler UpdateMeAvatar
+	put /me/avatar (UpdateMeAvatarReq) returns (EmptyResp)
+
+	@doc "修改用户密码"
+	@handler UpdateMePassword
+	put /me/password (UpdateMePasswordReq) returns (EmptyResp)
+
+	// ==================== 绑定管理 ====================
+	@doc "绑定邮箱"
+	@handler BindMeEmail
+	post /me/bind-email (BindMeEmailReq) returns (EmptyResp)
+
+	@doc "绑定手机号"
+	@handler BindMeMobile
+	post /me/bind-mobile (BindMeMobileReq) returns (EmptyResp)
+
+	@doc "绑定第三方平台账号"
+	@handler BindMeThirdParty
+	post /me/bind-third-party (BindMeThirdPartyReq) returns (EmptyResp)
+
+	@doc "解绑第三方平台账号"
+	@handler UnbindMeThirdParty
+	post /me/unbind-third-party (UnbindMeThirdPartyReq) returns (EmptyResp)
+
+	// ==================== 权限 ====================
+	@doc "获取用户角色"
+	@handler GetMeRoles
+	get /me/roles (EmptyReq) returns (GetMeRolesResp)
+
+	@doc "获取用户菜单权限"
+	@handler GetMeMenus
+	get /me/menus (EmptyReq) returns (GetMeMenusResp)
+
+	@doc "获取用户接口权限"
+	@handler GetMeApis
+	get /me/apis (EmptyReq) returns (GetMeApisResp)
+
+	// ==================== 活动记录 ====================
+	@doc "查询用户登录历史"
+	@handler QueryMeLoginLogList
+	get /me/login-logs (QueryMeLoginLogListReq) returns (ListResult)
+}
+
+// ============================================
+// 用户管理相关请求响应类型定义
+// ============================================
+type (
+	// 用户列表查询请求
+	QueryUserListReq {
+		ListQuery
+		Mobile  *string `json:"mobile,optional"` // 手机号筛选
+		Status  *int64  `json:"status,optional"` // 状态筛选
+		Keyword *string `json:"keyword,optional"` // 关键词搜索（昵称/手机号）
+	}
+	// 用户信息项
+	UserVO {
+		Id           int64            `json:"id"` // 用户ID
+		UserId       string           `json:"user_id"` // 用户ID (UUID)
+		Username     string           `json:"username"` //  用户名
+		Nickname     string           `json:"nickname"` // 用户昵称
+		Avatar       string           `json:"avatar"` // 用户头像
+		Mobile       string           `json:"mobile,optional"` // 用户手机号
+		Email        string           `json:"email,optional"` // 用户邮箱
+		Status       int64            `json:"status"` // 状态：0-禁用 1-正常 2-冻结
+		RegisterType string           `json:"register_type"` // 注册方式
+		IpAddress    string           `json:"ip_address"` // IP地址
+		IpSource     string           `json:"ip_source"` // IP归属地
+		CreatedAt    int64            `json:"created_at"`
+		UpdatedAt    int64            `json:"updated_at"`
+		RoleLabels   []*UserRoleLabel `json:"roles"`
+	}
+	UserRoleLabel {
+		RoleId    int64  `json:"role_id"`
+		RoleKey   string `json:"role_key"`
+		RoleLabel string `json:"role_label"`
+	}
+	UserLastLogin {
+		LoginAt        int64  `json:"login_at"` // 最后登录时间（毫秒时间戳）
+		LoginIpAddress string `json:"login_ip_address"` // 最后登录IP地址
+		LoginIpSource  string `json:"login_ip_source"` // 最后登录IP归属地
+	}
+	// 获取用户详情请求
+	GetUserDetailReq {
+		UserId string `path:"user_id"` // 用户ID (UUID)
+	}
+	// 用户详情响应
+	GetUserDetailResp {
+		UserVO
+		LastLogin UserLastLogin `json:"last_login"`
+	}
+	// 重置用户密码请求
+	ResetUserPasswordReq {
+		UserId      string `path:"user_id"` // 用户ID (UUID)
+		NewPassword string `json:"new_password" validate:"required,min=6"` // 新密码
+	}
+	// 重置用户密码响应
+	ResetUserPasswordResp  {}
+	// 更新用户状态请求
+	UpdateUserStatusReq {
+		UserId string `path:"user_id"` // 用户ID (UUID)
+		Status int64  `json:"status" validate:"required,oneof=0 1 2"` // 状态：0-禁用 1-正常 2-冻结
+	}
+	// 更新用户状态响应
+	UpdateUserStatusResp  {}
+	// 更新用户角色请求
+	UpdateUserRolesReq {
+		UserId  string  `path:"user_id"` // 用户ID (UUID)
+		RoleIds []int64 `json:"role_ids"` // 角色ID列表
+	}
+	// 更新用户角色响应
+	UpdateUserRolesResp  {}
+	OnlineUserItem {
+		UserInfo     *UserInfoVO  `json:"user_info"`
+		GuestInfo    *GuestInfoVO `json:"guest_info"`
+		LastActiveAt int64        `json:"last_active_at"`
+	}
+	OnlineUserListResp {
+		List []*OnlineUserItem `json:"list"`
+	}
+)
+
+// ============================================
+// 用户管理API定义（需要管理员认证）
+// ============================================
+@server (
+	tags:       "用户管理"
+	prefix:     /admin-api/v1
+	group:      account/user
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取用户列表"
+	@handler QueryUserList
+	get /users (QueryUserListReq) returns (ListResult)
+
+	@doc "获取用户详情"
+	@handler GetUserDetail
+	get /users/:user_id (GetUserDetailReq) returns (GetUserDetailResp)
+
+	@doc "重置用户密码"
+	@handler ResetUserPassword
+	post /users/:user_id/reset-password (ResetUserPasswordReq) returns (ResetUserPasswordResp)
+
+	@doc "更新用户状态"
+	@handler UpdateUserStatus
+	patch /users/:user_id (UpdateUserStatusReq) returns (UpdateUserStatusResp)
+
+	@doc "更新用户角色"
+	@handler UpdateUserRoles
+	put /users/:user_id/roles (UpdateUserRolesReq) returns (UpdateUserRolesResp)
+
+	@doc "获取在线用户列表"
+	@handler GetOnlineUsers
+	get /users/online (EmptyReq) returns (OnlineUserListResp)
+}
+

@@ -1,0 +1,38 @@
+# ============================================================
+# Ingress：app.veweiyi.cn（读者端）
+#   /api  → app-api:9420
+#   /     → app-web:80
+#
+# TLS：Secret blog-app-tls 由 cert-manager 签发（见 certificates.yaml）
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blog-app-ingress
+  namespace: blog
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: blog-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - app.veweiyi.cn
+      secretName: blog-app-tls
+  rules:
+    - host: app.veweiyi.cn
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: app-api
+                port:
+                  number: 9420
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-web
+                port:
+                  number: 80

@@ -1,0 +1,116 @@
+name: CI
+
+# 只做静态检查与测试；镜像构建发布见 docker-publish.yml
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同一分支的旧运行自动取消
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    name: Go / ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # 与根 Makefile 的 WORK_MODULES 一致
+        module: [blog-cloud, vkit, goctlx, stompws]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      # CI 里没有 SSH key，子模块走 HTTPS + PAT 拉取（同 docker-publish.yml）
+      - name: Setup submodules via HTTPS
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          git config --global url."https://${GH_TOKEN}@github.com/".insteadOf "git@github.com:"
+          git submodule update --init --recursive
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.work
+          cache-dependency-path: |
+            go.work.sum
+            ${{ matrix.module }}/go.sum
+
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::以下文件未格式化，请运行 gofmt -w"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: go build
+        run: go build ./...
+
+      - name: go vet
+        run: go vet ./...
+
+      # 统一用 -short：依赖真实凭证 / 外网 / 本地 MySQL 的测试都在该模式下跳过，
+      # 详见各测试文件里的 testing.Short() 守卫。
+      - name: go test
+        run: go test -short ./...
+
+  # 前端只做类型检查：两个应用的类型错误已清零，构建产物由各自的发布流程负责。
+  web:
+    name: Web / ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [blog-app, blog-admin]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      # CI 里没有 SSH key，子模块走 HTTPS + PAT 拉取（同 docker-publish.yml）。
+      # 只拉取本 job 需要的那个子模块，避免重复克隆其余 Go 模块。
+      - name: Setup submodule via HTTPS
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          git config --global url."https://${GH_TOKEN}@github.com/".insteadOf "git@github.com:"
+          git submodule update --init --recursive ${{ matrix.app }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.app }}/pnpm-lock.yaml
+
+      # HUSKY=0：CI 无需安装 git hooks，避免 prepare 脚本失败
+      - name: Install dependencies
+        working-directory: ${{ matrix.app }}
+        env:
+          HUSKY: 0
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        working-directory: ${{ matrix.app }}
+        run: pnpm type-check

@@ -1,0 +1,198 @@
+syntax = "v1"
+
+import "types.api"
+
+type (
+	WebsiteConfigVO {
+		AdminUrl        string               `json:"admin_url"`
+		WebsocketUrl    string               `json:"websocket_url"`
+		TouristAvatar   string               `json:"tourist_avatar"`
+		UserAvatar      string               `json:"user_avatar"`
+		WebsiteFeature  *WebsiteFeature      `json:"website_feature"`
+		WebsiteInfo     *WebsiteInfo         `json:"website_info"`
+		RewardQrCode    *RewardQrCode        `json:"reward_qr_code"`
+		SocialLoginList []*ThirdPlatformInfo `json:"social_login_list"`
+		SocialUrlList   []*SocialAccountInfo `json:"social_url_list"`
+	}
+	ThirdPlatformInfo {
+		Name     string `json:"name"`
+		Platform string `json:"platform"`
+		Enabled  bool   `json:"enabled"`
+	}
+	SocialAccountInfo {
+		Name     string `json:"name"`
+		Platform string `json:"platform"`
+		LinkUrl  string `json:"link_url"`
+		Enabled  bool   `json:"enabled"`
+	}
+	WebsiteFeature {
+		IsChatRoom      int64 `json:"is_chat_room"`
+		IsAiAssistant   int64 `json:"is_ai_assistant"`
+		IsMusicPlayer   int64 `json:"is_music_player"`
+		IsCommentReview int64 `json:"is_comment_review"`
+		IsEmailNotice   int64 `json:"is_email_notice"`
+		IsMessageReview int64 `json:"is_message_review"`
+		IsReward        int64 `json:"is_reward"`
+	}
+	RewardQrCode {
+		AlipayQrCode string `json:"alipay_qr_code"`
+		WeixinQrCode string `json:"weixin_qr_code"`
+	}
+	WebsiteInfo {
+		WebsiteAuthor     string `json:"website_author"`
+		WebsiteAvatar     string `json:"website_avatar"`
+		WebsiteCreateTime string `json:"website_create_time"`
+		WebsiteIntro      string `json:"website_intro"`
+		WebsiteName       string `json:"website_name"`
+		WebsiteNotice     string `json:"website_notice"`
+		WebsiteRecordNo   string `json:"website_record_no"`
+	}
+	AboutMeVO {
+		Content string `json:"content"`
+	}
+)
+
+@server (
+	tags:       "网站管理"
+	prefix:     /admin-api/v1
+	group:      site/config
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取网站配置"
+	@handler GetWebsiteConfig
+	get /website-config (EmptyReq) returns (WebsiteConfigVO)
+
+	@doc "更新网站配置（请求体与响应共用 WebsiteConfigVO：单例配置对象，无服务端生成字段，二者同构）"
+	@handler UpdateWebsiteConfig
+	put /website-config (WebsiteConfigVO) returns (EmptyResp)
+
+	@doc "获取关于我的信息"
+	@handler GetAboutMe
+	get /about-me (EmptyReq) returns (AboutMeVO)
+
+	@doc "更新关于我的信息（请求体与响应共用 AboutMeVO，同上）"
+	@handler UpdateAboutMe
+	put /about-me (AboutMeVO) returns (EmptyResp)
+}
+
+// ==================== 页面管理 ====================
+type (
+	PageVO {
+		Id             int64    `json:"id,optional"`
+		PageName       string   `json:"page_name"`
+		PageLabel      string   `json:"page_label"`
+		PageCover      string   `json:"page_cover"`
+		IsCarousel     int64    `json:"is_carousel"`
+		CarouselCovers []string `json:"carousel_covers"`
+		CreatedAt      int64    `json:"created_at"`
+		UpdatedAt      int64    `json:"updated_at"`
+	}
+	CreatePageReq {
+		PageName       string   `json:"page_name"`
+		PageLabel      string   `json:"page_label"`
+		PageCover      string   `json:"page_cover"`
+		IsCarousel     int64    `json:"is_carousel,optional"`
+		CarouselCovers []string `json:"carousel_covers,optional"`
+	}
+	UpdatePageReq {
+		Id             int64    `path:"id"`
+		PageName       string   `json:"page_name"`
+		PageLabel      string   `json:"page_label"`
+		PageCover      string   `json:"page_cover"`
+		IsCarousel     int64    `json:"is_carousel,optional"`
+		CarouselCovers []string `json:"carousel_covers,optional"`
+	}
+	QueryPageListReq {
+		ListQuery
+		PageName *string `json:"page_name,optional"`
+	}
+	DeletePageReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "页面管理"
+	prefix:     /admin-api/v1
+	group:      site/page
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取页面列表"
+	@handler QueryPageList
+	get /pages (QueryPageListReq) returns (ListResult)
+
+	@doc "创建页面"
+	@handler CreatePage
+	post /pages (CreatePageReq) returns (PageVO)
+
+	@doc "更新页面"
+	@handler UpdatePage
+	put /pages/:id (UpdatePageReq) returns (PageVO)
+
+	@doc "批量删除页面"
+	@handler BatchDeletePage
+	post /pages/batch-delete (DeletePageReq) returns (BatchResp)
+}
+
+// ==================== 友链管理 ====================
+type (
+	FriendVO {
+		Id          int64  `json:"id,optional"`
+		LinkName    string `json:"link_name"`
+		LinkAvatar  string `json:"link_avatar"`
+		LinkAddress string `json:"link_address"`
+		LinkIntro   string `json:"link_intro"`
+		CreatedAt   int64  `json:"created_at"`
+		UpdatedAt   int64  `json:"updated_at"`
+	}
+	CreateFriendReq {
+		LinkName    string `json:"link_name"`
+		LinkAvatar  string `json:"link_avatar"`
+		LinkAddress string `json:"link_address"`
+		LinkIntro   string `json:"link_intro"`
+	}
+	UpdateFriendReq {
+		Id          int64  `path:"id"`
+		LinkName    string `json:"link_name"`
+		LinkAvatar  string `json:"link_avatar"`
+		LinkAddress string `json:"link_address"`
+		LinkIntro   string `json:"link_intro"`
+	}
+	QueryFriendListReq {
+		ListQuery
+		LinkName *string `json:"link_name,optional"`
+	}
+	DeleteFriendReq {
+		Ids []int64 `json:"ids"`
+	}
+)
+
+@server (
+	tags:       "友链管理"
+	prefix:     /admin-api/v1
+	group:      site/friend
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取友链列表"
+	@handler QueryFriendList
+	get /friends (QueryFriendListReq) returns (ListResult)
+
+	@doc "创建友链"
+	@handler CreateFriend
+	post /friends (CreateFriendReq) returns (FriendVO)
+
+	@doc "更新友链"
+	@handler UpdateFriend
+	put /friends/:id (UpdateFriendReq) returns (FriendVO)
+
+	@doc "批量删除友链"
+	@handler BatchDeleteFriend
+	post /friends/batch-delete (DeleteFriendReq) returns (BatchResp)
+}
+

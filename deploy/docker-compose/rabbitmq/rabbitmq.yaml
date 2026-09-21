@@ -3,14 +3,20 @@ volumes:
 
 services:
   rabbitmq:
-    image: rabbitmq:management
+    image: rabbitmq:4.3.2-management
     container_name: rabbitmq-server
     restart: always
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=veweiyi
-      - RABBITMQ_DEFAULT_PASS=rabbitmq7914
+      - RABBITMQ_DEFAULT_USER=blog
+      - RABBITMQ_DEFAULT_PASS=blog-rabbitmq-2026
     volumes:
       - rabbitmq:/var/lib/rabbitmq
+
+# 见 mysql/mysql.yaml 末尾说明：依赖与应用共用 blog-net。
+networks:
+  default:
+    name: blog-net
+    external: true

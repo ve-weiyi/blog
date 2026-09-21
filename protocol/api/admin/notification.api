@@ -1,0 +1,299 @@
+syntax = "v1"
+
+import "types.api"
+
+// ==================== 统一通知消息管理 ====================
+type (
+	NotifyMessageVO {
+		Id          int64  `json:"id,optional"`
+		Title       string `json:"title"`
+		Content     string `json:"content"`
+		Category    string `json:"category"`
+		Level       string `json:"level"`
+		TargetType  string `json:"target_type"`
+		TargetIds   string `json:"target_ids"`
+		Status      string `json:"status"`
+		PublishedAt int64  `json:"published_at"`
+		PublishedBy string `json:"published_by"`
+		CreatedAt   int64  `json:"created_at"`
+		UpdatedAt   int64  `json:"updated_at"`
+	}
+	QueryNotifyMessageListReq {
+		ListQuery
+		Category   *string `json:"category,optional"`
+		Level      *string `json:"level,optional"`
+		Status     *string `json:"status,optional"`
+		TargetType *string `json:"target_type,optional"`
+	}
+	CreateNotifyMessageReq {
+		Title      string `json:"title"`
+		Content    string `json:"content"`
+		Category   string `json:"category"`
+		Level      string `json:"level"`
+		TargetType string `json:"target_type"`
+		TargetIds  string `json:"target_ids,optional"`
+	}
+	UpdateNotifyMessageReq {
+		Id         int64  `path:"id"`
+		Title      string `json:"title"`
+		Content    string `json:"content"`
+		Category   string `json:"category"`
+		Level      string `json:"level"`
+		TargetType string `json:"target_type"`
+		TargetIds  string `json:"target_ids,optional"`
+	}
+	DeleteNotifyMessageReq {
+		Ids []int64 `json:"ids"`
+	}
+	GetNotifyMessageReq {
+		Id int64 `path:"id"`
+	}
+	PublishNotifyMessageReq {
+		Id int64 `path:"id"`
+	}
+	RevokeNotifyMessageReq {
+		Id int64 `path:"id"`
+	}
+	QueryUndeliveredNotifyMessagesReq {
+		BeforeSeconds *int64 `json:"before_seconds,optional"`
+		Limit         *int64 `json:"limit,optional"`
+	}
+	RedeliverNotifyMessageReq {
+		Id int64 `path:"id"`
+	}
+)
+
+@server (
+	tags:       "通知消息管理"
+	prefix:     /admin-api/v1
+	group:      notification/notify_message
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取统一通知消息列表"
+	@handler QueryNotifyMessageList
+	get /notify-messages (QueryNotifyMessageListReq) returns (ListResult)
+
+	@doc "创建统一通知消息"
+	@handler CreateNotifyMessage
+	post /notify-messages (CreateNotifyMessageReq) returns (NotifyMessageVO)
+
+	@doc "获取统一通知消息详情"
+	@handler GetNotifyMessage
+	get /notify-messages/:id (GetNotifyMessageReq) returns (NotifyMessageVO)
+
+	@doc "更新统一通知消息"
+	@handler UpdateNotifyMessage
+	put /notify-messages/:id (UpdateNotifyMessageReq) returns (NotifyMessageVO)
+
+	@doc "批量删除统一通知消息"
+	@handler BatchDeleteNotifyMessage
+	post /notify-messages/batch-delete (DeleteNotifyMessageReq) returns (BatchResp)
+
+	@doc "发布统一通知消息"
+	@handler PublishNotifyMessage
+	post /notify-messages/:id/publish (PublishNotifyMessageReq) returns (BatchResp)
+
+	@doc "撤回统一通知消息"
+	@handler RevokeNotifyMessage
+	post /notify-messages/:id/revoke (RevokeNotifyMessageReq) returns (BatchResp)
+
+	@doc "查询已发布但未投递的通知消息"
+	@handler QueryUndeliveredNotifyMessages
+	get /notify-messages/undelivered (QueryUndeliveredNotifyMessagesReq) returns (ListResult)
+
+	@doc "重新投递通知消息"
+	@handler RedeliverNotifyMessage
+	post /notify-messages/:id/redeliver (RedeliverNotifyMessageReq) returns (BatchResp)
+}
+
+// ==================== 统一投递记录管理 ====================
+type (
+	NotifyRecordVO {
+		Id           int64  `json:"id,optional"`
+		MessageId    int64  `json:"message_id"`
+		Channel      string `json:"channel"`
+		Recipient    string `json:"recipient"`
+		TemplateCode string `json:"template_code"`
+		Content      string `json:"content"`
+		Status       string `json:"status"`
+		BizId        string `json:"biz_id"`
+		ErrorMsg     string `json:"error_msg"`
+		ReadAt       int64  `json:"read_at"`
+		SentAt       int64  `json:"sent_at"`
+		CreatedAt    int64  `json:"created_at"`
+		Title        string `json:"title"`
+		Category     string `json:"category"`
+		Level        string `json:"level"`
+	}
+	QueryUserInboxRecordListReq {
+		ListQuery
+		UserId     string  `json:"user_id"`
+		OnlyUnread *int64  `json:"only_unread,optional"`
+		Title      *string `json:"title,optional"`
+	}
+	QueryNotifyRecordListReq {
+		ListQuery
+		Channel   *string `json:"channel,optional"`
+		Status    *string `json:"status,optional"`
+		Recipient *string `json:"recipient,optional"`
+	}
+	DeleteNotifyRecordReq {
+		Ids []int64 `json:"ids"`
+	}
+	BatchMarkRecordsReadReq {
+		Ids []int64 `json:"ids"`
+	}
+	MarkAllRecordsReadReq {
+		UserId string `json:"user_id"`
+	}
+	MarkRecordReadReq {
+		Id int64 `path:"id"`
+	}
+	QueryUserInboxRecordListResp {
+		Page        int64       `json:"page"`
+		PageSize    int64       `json:"page_size"`
+		Total       int64       `json:"total"`
+		UnreadTotal int64       `json:"unread_total"`
+		List        interface{} `json:"list"`
+	}
+)
+
+@server (
+	tags:       "投递记录管理"
+	prefix:     /admin-api/v1
+	group:      notification/notify_record
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "查询用户 inbox 投递列表"
+	@handler QueryUserInboxRecordList
+	get /inbox-records (QueryUserInboxRecordListReq) returns (QueryUserInboxRecordListResp)
+
+	@doc "获取统一投递记录列表"
+	@handler QueryNotifyRecordList
+	get /notify-records (QueryNotifyRecordListReq) returns (ListResult)
+
+	@doc "批量删除投递记录"
+	@handler BatchDeleteNotifyRecord
+	post /notify-records/batch-delete (DeleteNotifyRecordReq) returns (BatchResp)
+
+	@doc "批量标记投递记录为已读"
+	@handler BatchMarkRecordsRead
+	post /inbox-records/batch-mark-read (BatchMarkRecordsReadReq) returns (BatchResp)
+
+	@doc "全部标记投递记录为已读"
+	@handler MarkAllRecordsRead
+	post /inbox-records/mark-all-read (MarkAllRecordsReadReq) returns (BatchResp)
+
+	@doc "标记单条投递记录为已读"
+	@handler MarkRecordRead
+	post /inbox-records/:id/mark-read (MarkRecordReadReq) returns (BatchResp)
+}
+
+// ==================== 通知模板管理 ====================
+type (
+	NotifyTemplateVO {
+		Id        int64  `json:"id,optional"`
+		Code      string `json:"code"`
+		Channel   string `json:"channel"`
+		Scene     string `json:"scene"`
+		Title     string `json:"title"`
+		Content   string `json:"content"`
+		Enabled   int64  `json:"enabled"`
+		CreatedAt int64  `json:"created_at"`
+		UpdatedAt int64  `json:"updated_at"`
+	}
+	QueryNotifyTemplateListReq {
+		ListQuery
+		Channel *string `json:"channel,optional"`
+	}
+	CreateNotifyTemplateReq {
+		Code    string `json:"code"`
+		Channel string `json:"channel"`
+		Scene   string `json:"scene"`
+		Title   string `json:"title"`
+		Content string `json:"content"`
+		Enabled int64  `json:"enabled,optional,default=1"`
+	}
+	UpdateNotifyTemplateReq {
+		Id      int64  `path:"id"`
+		Code    string `json:"code"`
+		Channel string `json:"channel"`
+		Scene   string `json:"scene"`
+		Title   string `json:"title"`
+		Content string `json:"content"`
+		Enabled int64  `json:"enabled"`
+	}
+	DeleteNotifyTemplateReq {
+		Ids []int64 `json:"ids"`
+	}
+	GetNotifyTemplateReq {
+		Id int64 `path:"id"`
+	}
+)
+
+@server (
+	tags:       "通知模板管理"
+	prefix:     /admin-api/v1
+	group:      notification/notify_template
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取通知模板列表"
+	@handler QueryNotifyTemplateList
+	get /notify-templates (QueryNotifyTemplateListReq) returns (ListResult)
+
+	@doc "创建通知模板"
+	@handler CreateNotifyTemplate
+	post /notify-templates (CreateNotifyTemplateReq) returns (NotifyTemplateVO)
+
+	@doc "获取通知模板详情"
+	@handler GetNotifyTemplate
+	get /notify-templates/:id (GetNotifyTemplateReq) returns (NotifyTemplateVO)
+
+	@doc "更新通知模板"
+	@handler UpdateNotifyTemplate
+	put /notify-templates/:id (UpdateNotifyTemplateReq) returns (NotifyTemplateVO)
+
+	@doc "批量删除通知模板"
+	@handler BatchDeleteNotifyTemplate
+	post /notify-templates/batch-delete (DeleteNotifyTemplateReq) returns (BatchResp)
+}
+
+// ==================== 通知实时推送 ====================
+type (
+	// NotifyStreamEvent 推送帧。事件类型放在 event 字段里（流本身只发 data: 行），
+	// 客户端按 event 值分发后自行回查未读，所以载荷不含收件人。
+	//
+	// 字段变更需**同步三处**：本文件、infra/notifyx/event.go、
+	// blog-admin/src/composables/sse/sseEvents.ts
+	NotifyStreamEvent {
+		Event       string `json:"event"`
+		MessageId   int64  `json:"message_id,optional"`
+		Title       string `json:"title,optional"`
+		Category    string `json:"category,optional"`
+		Level       string `json:"level,optional"`
+		PublishedAt int64  `json:"published_at,optional"`
+	}
+)
+
+// sse: true 是组级属性，整组路由都会变成 SSE 流，因此必须单独成组。
+// 组内只挂 AdminAuth：长连接不适合记操作日志，也没有受 RBAC 保护的资源操作。
+@server (
+	tags:       "通知实时推送"
+	prefix:     /admin-api/v1
+	group:      notification/notify_stream
+	authType:   apiKey
+	middleware: AdminAuth,NotifyStreamLimit
+	sse:        true
+)
+service admin-api {
+	@doc "通知消息推送流（SSE）"
+	@handler NotifyStream
+	get /notify-messages/stream returns (NotifyStreamEvent)
+}
+

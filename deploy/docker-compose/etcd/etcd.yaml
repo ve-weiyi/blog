@@ -1,0 +1,32 @@
+volumes:
+  etcd:
+
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.17
+    container_name: etcd-server
+    restart: always
+    ports:
+      - '2379:2379'   # client
+      - '2380:2380'   # peer
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - etcd:/var/lib/etcd
+    # 与 deploy/k8s/etcd/etcd.yaml 对齐；区别仅在于 advertise 地址：
+    # 集群内用服务名 etcd，本机单容器用 localhost。
+    command:
+      - etcd
+      - --name=etcd
+      - --data-dir=/var/lib/etcd
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://localhost:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://localhost:2380
+      - --initial-cluster=etcd=http://localhost:2380
+
+# 见 mysql/mysql.yaml 末尾说明：依赖与应用共用 blog-net。
+networks:
+  default:
+    name: blog-net
+    external: true

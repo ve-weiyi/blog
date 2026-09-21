@@ -1,15 +1,15 @@
 services:
   # ============================================================
-  # app-rpc — gRPC 服务（文章 / 用户 / 互动 / 通知 / 配置）
+  # blog-rpc — gRPC 服务（文章 / 用户 / 互动 / 通知 / 配置）
   # ============================================================
-  app-rpc:
+  blog-rpc:
     build:
       context: ../..
       dockerfile: deploy/docker/backend/Dockerfile
       args:
         SERVICE_DIR: blog-cloud/rpc/blog
-    image: blog-app-rpc:latest
-    container_name: blog-app-rpc
+    image: blog-rpc:latest
+    container_name: blog-rpc
     env_file:
       - .env
     environment:
@@ -27,7 +27,7 @@ services:
       "-nacos-password", "${NACOS_PASSWORD}",
       "-nacos-namespace", "${NACOS_NAMESPACE}",
       "-nacos-group", "${NACOS_GROUP}",
-      "-nacos-data-id", "blog-app-rpc"
+      "-nacos-data-id", "blog-rpc"
     ]
 
   # ============================================================
@@ -39,8 +39,8 @@ services:
       dockerfile: deploy/docker/backend/Dockerfile
       args:
         SERVICE_DIR: blog-cloud/api/app
-    image: blog-app-api:latest
-    container_name: blog-app-api
+    image: app-api:latest
+    container_name: app-api
     env_file:
       - .env
     environment:
@@ -58,7 +58,7 @@ services:
       "-nacos-password", "${NACOS_PASSWORD}",
       "-nacos-namespace", "${NACOS_NAMESPACE}",
       "-nacos-group", "${NACOS_GROUP}",
-      "-nacos-data-id", "blog-app-api"
+      "-nacos-data-id", "app-api"
     ]
 
   # ============================================================
@@ -70,8 +70,8 @@ services:
       dockerfile: deploy/docker/backend/Dockerfile
       args:
         SERVICE_DIR: blog-cloud/api/admin
-    image: blog-admin-api:latest
-    container_name: blog-admin-api
+    image: admin-api:latest
+    container_name: admin-api
     env_file:
       - .env
     environment:
@@ -89,7 +89,7 @@ services:
       "-nacos-password", "${NACOS_PASSWORD}",
       "-nacos-namespace", "${NACOS_NAMESPACE}",
       "-nacos-group", "${NACOS_GROUP}",
-      "-nacos-data-id", "blog-admin-api"
+      "-nacos-data-id", "admin-api"
     ]
 
   # ============================================================
@@ -101,12 +101,12 @@ services:
       dockerfile: ../deploy/docker/frontend/Dockerfile
       args:
         DIST_DIR: dist/blog
-        PROXY_PASS: blog.veweiyi.cn
-    image: blog-app-web:latest
-    container_name: blog-app-web
+        PROXY_PASS: app.veweiyi.cn
+    image: app-web:latest
+    container_name: app-web
     restart: unless-stopped
     ports:
-      - "${APP_WEB_PORT:-9521}:80"
+      - "${APP_WEB_PORT:-9520}:80"
 
   # ============================================================
   # admin-web — 管理后台前端（Vue 3 SPA）
@@ -118,8 +118,15 @@ services:
       args:
         DIST_DIR: dist/admin
         PROXY_PASS: admin.veweiyi.cn
-    image: blog-admin-web:latest
-    container_name: blog-admin-web
+    image: admin-web:latest
+    container_name: admin-web
     restart: unless-stopped
     ports:
-      - "${ADMIN_WEB_PORT:-9520}:80"
+      - "${ADMIN_WEB_PORT:-9521}:80"
+
+# 应用与依赖服务共用 blog-net（由 deploy/docker/up.sh 创建），
+# 这样应用才能经短名访问中间件。详见 deploy/docker-compose/mysql/mysql.yaml 末尾。
+networks:
+  default:
+    name: blog-net
+    external: true

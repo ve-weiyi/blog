@@ -3,7 +3,7 @@ volumes:
 
 services:
   nacos:
-    image: nacos/nacos-server:v2.3.1
+    image: nacos/nacos-server:v3.1.1
     container_name: nacos-derby
     restart: always
     environment:
@@ -18,3 +18,10 @@ services:
     ports:
       - "8848:8848"
       - "9848:9848"
+
+# 见 mysql/mysql.yaml 末尾说明：依赖与应用共用 blog-net。
+# 应用经短名 nacos 连接，`deploy/docker/.env` 的 NACOS_HOST 即为此值。
+networks:
+  default:
+    name: blog-net
+    external: true

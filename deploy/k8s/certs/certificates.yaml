@@ -1,0 +1,65 @@
+# ============================================================
+# cert-manager Certificate：一域名一证书
+#
+# 证书由 cert-manager 签发并以 Secret 形式存放，无需任何手工导入步骤。
+# 各 Ingress 通过 tls.secretName 引用下表的 Secret（路由定义在 ../ingress/）：
+#   blog-app-tls    → ../ingress/app.yaml
+#   blog-admin-tls  → ../ingress/admin.yaml
+#   blog-nacos-tls  → ../ingress/nacos.yaml
+#   blog-minio-tls  → ../ingress/minio.yaml
+#
+# issuerRef 指向 letsencrypt-prod（浏览器信任）。
+# 首次部署若需验证 HTTP-01 链路，可临时改为 letsencrypt-staging 试签——
+# 签出的证书浏览器不信任，仅用于确认流程能跑通，改回 prod 后重新 apply 即可。
+# ============================================================
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: blog-app-cert
+  namespace: blog
+spec:
+  secretName: blog-app-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - app.veweiyi.cn
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: blog-admin-cert
+  namespace: blog
+spec:
+  secretName: blog-admin-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - admin.veweiyi.cn
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: blog-nacos-cert
+  namespace: blog
+spec:
+  secretName: blog-nacos-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - nacos.veweiyi.cn
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: blog-minio-cert
+  namespace: blog
+spec:
+  secretName: blog-minio-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - minio.veweiyi.cn

@@ -1,0 +1,226 @@
+syntax = "v1"
+
+import "types.api"
+
+// ==================== 评论模块 ====================
+type (
+	CreateCommentReq {
+		TopicId        int64  `json:"topic_id,optional"`
+		ParentId       int64  `json:"parent_id,optional"`
+		ReplyId        int64  `json:"reply_id,optional"`
+		ReplyUserId    string `json:"reply_user_id,optional"`
+		CommentContent string `json:"comment_content"`
+		Status         int64  `json:"status,optional"`
+		Type           int64  `json:"type"`
+	}
+	UpdateCommentReq {
+		CommentId      int64  `path:"id"`
+		ReplyUserId    string `json:"reply_user_id,optional"`
+		CommentContent string `json:"comment_content"`
+		Status         int64  `json:"status,optional"`
+	}
+	Comment {
+		Id               int64           `json:"id"`
+		UserId           string          `json:"user_id"`
+		DeviceId         string          `json:"device_id"`
+		TopicId          int64           `json:"topic_id"`
+		ParentId         int64           `json:"parent_id"`
+		ReplyId          int64           `json:"reply_id"`
+		ReplyUserId      string          `json:"reply_user_id"`
+		CommentContent   string          `json:"comment_content"`
+		Status           int64           `json:"status"`
+		Type             int64           `json:"type"`
+		CreatedAt        int64           `json:"created_at"`
+		LikeCount        int64           `json:"like_count"`
+		GuestInfo        *GuestInfoVO    `json:"guest_info"`
+		UserInfo         *UserInfoVO     `json:"user_info"`
+		ReplyUserInfo    *UserInfoVO     `json:"reply_user_info"`
+		ReplyCount       int64           `json:"reply_count"`
+		CommentReplyList []*CommentReply `json:"comment_reply_list"`
+	}
+	CommentReply {
+		Id             int64        `json:"id"`
+		UserId         string       `json:"user_id"`
+		DeviceId       string       `json:"device_id"`
+		TopicId        int64        `json:"topic_id"`
+		ParentId       int64        `json:"parent_id"`
+		ReplyId        int64        `json:"reply_id"`
+		ReplyUserId    string       `json:"reply_user_id"`
+		CommentContent string       `json:"comment_content"`
+		Status         int64        `json:"status"`
+		Type           int64        `json:"type"`
+		CreatedAt      int64        `json:"created_at"`
+		LikeCount      int64        `json:"like_count"`
+		GuestInfo      *GuestInfoVO `json:"guest_info"`
+		UserInfo       *UserInfoVO  `json:"user_info"`
+		ReplyUserInfo  *UserInfoVO  `json:"reply_user_info"`
+	}
+	CommentRecent {
+		Id             int64        `json:"id"`
+		UserId         string       `json:"user_id"`
+		DeviceId       string       `json:"device_id"`
+		ReplyUserId    string       `json:"reply_user_id"`
+		CommentContent string       `json:"comment_content"`
+		Status         int64        `json:"status"`
+		GuestInfo      *GuestInfoVO `json:"guest_info"`
+		UserInfo       *UserInfoVO  `json:"user_info"`
+		ReplyUserInfo  *UserInfoVO  `json:"reply_user_info"`
+	}
+	QueryCommentListReq {
+		ListQuery
+		TopicId  *int64 `json:"topic_id,optional"`
+		ParentId *int64 `json:"parent_id,optional"`
+		Type     *int64 `json:"type,optional"`
+	}
+	QueryCommentReplyListReq {
+		CommentId int64 `path:"comment_id"`
+		ListQuery
+		TopicId *int64 `json:"topic_id,optional"`
+		Type    *int64 `json:"type,optional"`
+	}
+	LikeCommentReq {
+		CommentId int64 `path:"id"`
+	}
+)
+
+@server (
+	tags:     "评论"
+	prefix:   /api/v1
+	group:    discussion/comment
+	authType: apiKey
+)
+service app-api {
+	@doc "获取评论列表"
+	@handler QueryCommentList
+	get /comments (QueryCommentListReq) returns (ListResult)
+
+	@doc "获取评论回复列表"
+	@handler QueryCommentReplyList
+	get /comments/:comment_id/replies (QueryCommentReplyListReq) returns (ListResult)
+
+	@doc "获取最新评论列表"
+	@handler QueryRecentCommentList
+	get /comments/recent (QueryCommentListReq) returns (ListResult)
+}
+
+@server (
+	tags:       "评论"
+	prefix:     /api/v1
+	group:      discussion/comment
+	authType:   apiKey
+	middleware: UserAuth
+)
+service app-api {
+	@doc "创建评论"
+	@handler CreateComment
+	post /comments (CreateCommentReq) returns (EmptyResp)
+
+	@doc "更新评论"
+	@handler UpdateComment
+	put /comments/:id (UpdateCommentReq) returns (EmptyResp)
+
+	@doc "点赞评论"
+	@handler LikeComment
+	post /comments/:id/like (LikeCommentReq) returns (EmptyResp)
+}
+
+// ==================== 留言模块 ====================
+type (
+	CreateMessageReq {
+		MessageContent string `json:"message_content"`
+	}
+	Message {
+		Id             int64       `json:"id"`
+		UserId         string      `json:"user_id"`
+		DeviceId       string      `json:"device_id"`
+		MessageContent string      `json:"message_content"`
+		Status         int64       `json:"status"`
+		CreatedAt      int64       `json:"created_at"`
+		UpdatedAt      int64       `json:"updated_at"`
+		UserInfo       *UserInfoVO `json:"user_info"`
+	}
+	QueryMessageListReq {
+		ListQuery
+	}
+)
+
+@server (
+	tags:     "留言"
+	prefix:   /api/v1
+	group:    discussion/message
+	authType: apiKey
+)
+service app-api {
+	@doc "获取留言列表"
+	@handler QueryMessageList
+	get /messages (QueryMessageListReq) returns (ListResult)
+}
+
+@server (
+	tags:       "留言"
+	prefix:     /api/v1
+	group:      discussion/message
+	authType:   apiKey
+	middleware: UserAuth
+)
+service app-api {
+	@doc "创建留言"
+	@handler CreateMessage
+	post /messages (CreateMessageReq) returns (EmptyResp)
+}
+
+// ==================== 说说模块 ====================
+type (
+	Talk {
+		Id           int64       `json:"id"` // 说说ID
+		UserId       string      `json:"user_id"` // 用户ID
+		Content      string      `json:"content"` // 说说内容
+		ImgList      []string    `json:"img_list"` // 图片URL列表
+		IsTop        int64       `json:"is_top"` // 是否置顶
+		Status       int64       `json:"status"` // 状态 1.公开 2.私密
+		LikeCount    int64       `json:"like_count"` // 点赞量
+		CommentCount int64       `json:"comment_count"` // 评论量
+		CreatedAt    int64       `json:"created_at"` // 创建时间
+		UpdatedAt    int64       `json:"updated_at"` // 更新时间
+		UserInfo     *UserInfoVO `json:"user_info"` // 用户信息
+	}
+	QueryTalkListReq {
+		ListQuery
+	}
+	GetTalkReq {
+		TalkId int64 `path:"id"`
+	}
+	LikeTalkReq {
+		TalkId int64 `path:"id"`
+	}
+)
+
+@server (
+	tags:     "说说"
+	prefix:   /api/v1
+	group:    discussion/talk
+	authType: apiKey
+)
+service app-api {
+	@doc "获取说说列表"
+	@handler QueryTalkList
+	get /talks (QueryTalkListReq) returns (ListResult)
+
+	@doc "获取说说详情"
+	@handler GetTalk
+	get /talks/:id (GetTalkReq) returns (Talk)
+}
+
+@server (
+	tags:       "说说"
+	prefix:     /api/v1
+	group:      discussion/talk
+	authType:   apiKey
+	middleware: UserAuth
+)
+service app-api {
+	@doc "点赞说说"
+	@handler LikeTalk
+	post /talks/:id/like (LikeTalkReq) returns (EmptyResp)
+}
+

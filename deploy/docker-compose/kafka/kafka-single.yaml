@@ -48,7 +48,7 @@ services:
 
   # 可选：轻量 Kafka-UI（方便可视化管理，也可移除）
   kafka-ui:
-    image: provectuslabs/kafka-ui
+    image: provectuslabs/kafka-ui:v0.7.2
     container_name: kafka-ui
     ports:
       - "9080:8080"
