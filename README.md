@@ -6,10 +6,10 @@
 
 [![Go](https://img.shields.io/badge/Go-1.26-blue?logo=go)](https://go.dev/)
 [![Go-Zero](https://img.shields.io/badge/Go--Zero-1.10-yellow?logo=go)](https://go-zero.dev/)
-[![gRPC](https://img.shields.io/badge/gRPC-1.81-brightgreen)](https://grpc.io/)
+[![gRPC](https://img.shields.io/badge/gRPC-1.84-brightgreen)](https://grpc.io/)
 [![GORM](https://img.shields.io/badge/GORM-1.31-red)](https://gorm.io/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql)](https://www.mysql.com/)
-[![Redis](https://img.shields.io/badge/Redis-9.19-purple?logo=redis)](https://redis.io/)
+[![Redis](https://img.shields.io/badge/Redis-7.4-purple?logo=redis)](https://redis.io/)
 [![Vue](https://img.shields.io/badge/Vue-3.5-brightgreen?logo=vuedotjs)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Docker](https://img.shields.io/badge/Docker-blue?logo=docker)](https://www.docker.com/)
@@ -78,12 +78,12 @@ blog/
 ├── blog-cloud/       # 后端服务：api/admin、api/app、rpc/blog
 ├── blog-admin/       # 管理后台前端（Vue 3 + Element Plus）
 ├── blog-app/         # 博客前台前端（Vue 3 + Naive UI）
-├── vkit/             # 公共库：adapter（外部服务适配）、x（标准库扩展）
+├── vkit/             # 公共库：adapter（外部服务适配）、infra（框架封装）、x（通用能力）
 ├── stompws/          # STOMP over WebSocket 服务
 ├── goctlx/           # 代码生成工具（API / 模型 / 前端）
 ├── protocol/         # 协议定义：api、proto
 ├── deploy/           # 部署编排：docker、docker-compose、k8s
-├── docs/             # 文档：设计、功能方案、审查、手册、规范、部署
+├── docs/             # 文档：设计、功能方案、审查、手册、规范
 └── assets/           # 项目截图
 ```
 
@@ -129,18 +129,20 @@ PC 端首页 —— 全屏大图轮播、诗词文案、音乐播放器：
 
 ## 🛠️ 技术栈
 
+> 版本以各模块 `go.mod` / `package.json` 为唯一真相源，本表仅为概览。
+
 ### 后端
 
 | 技术 | 版本 | 说明 |
 |------|------|------|
-| Go | 1.25 | 编程语言 |
+| Go | 1.26 | 编程语言 |
 | go-zero | 1.10 | 微服务框架 |
-| gRPC | 1.81 | RPC 通信框架 |
+| gRPC | 1.84 | RPC 通信框架 |
 | GORM | 1.31 | ORM 框架 |
 | MySQL | 8.0 | 关系型数据库 |
-| Redis | 9.20 | 缓存数据库（go-redis/v9） |
-| RabbitMQ | 3.12+ | 消息队列 |
-| Nacos | 2.x | 注册中心与配置中心 |
+| Redis | 7.4 | 缓存数据库（服务端 `redis:7.4-alpine`，客户端 go-redis v9.22） |
+| RabbitMQ | 4.3 | 消息队列 |
+| Nacos | 3.1 | 注册中心与配置中心 |
 | JWT | — | 身份认证 |
 | Swagger | 2.0 | API 文档 |
 
@@ -150,10 +152,10 @@ PC 端首页 —— 全屏大图轮播、诗词文案、音乐播放器：
 |------|---------|---------|
 | Vue | 3.5 | 3.5 |
 | TypeScript | 5.9 | 5.9 |
-| Vite | 6.4 | 8.0 |
-| Pinia | 3.0 | 3.0 |
-| UI 组件库 | Naive UI 2.43 | Element Plus 2.14 |
-| UnoCSS | 66.5 | 66.7 |
+| Vite | 8.3 | 8.0 |
+| Pinia | 4.0 | 3.0 |
+| UI 组件库 | Naive UI 2.45 | Element Plus 2.14 |
+| UnoCSS | 66.10 | 66.7 |
 
 ### 部署
 
@@ -178,10 +180,10 @@ Docker · Docker Compose · Kubernetes · Nginx
 
 ### 环境要求
 
-- Go 1.26+（工作区模式所需；各模块 `go.mod` 声明 1.25.8）
+- Go 1.26+（工作区 `go.work` 声明 1.26.1；各模块 `go.mod` 同，`stompws` 为 1.24.0）
 - Node.js 20.19+ / 22.12+ 与 pnpm
 - Docker 与 Docker Compose
-- MySQL 8.0+ · Redis 6.2+ · RabbitMQ 3.12+
+- MySQL 8.0+ · Redis 7.4+ · RabbitMQ 4.3+
 
 ### 1. 克隆项目
 

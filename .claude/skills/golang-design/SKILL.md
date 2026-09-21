@@ -1,6 +1,6 @@
 ---
 name: golang-design
-description: "编写或设计 Go 代码时主动应用——从包与职责、接口与耦合、并发安全、错误与边界、一致性与简洁五个维度指导设计决策。涵盖包内聚与分层、接口所有权与依赖注入、goroutine 生命周期与锁安全、错误处理模式与 API 边界防护、DRY 与简洁优先等。当编写 Go 代码、定义类型/接口、组织包结构、引入并发、处理错误时主动应用。"
+description: "编写、设计或修改 Go 代码时使用。当你要新增或改动 .go 文件、定义类型与接口、组织或拆分包、引入 goroutine 与锁、处理错误与边界、写测试、或在提交前自检设计质量时使用；即使用户没有点名「设计」或「规范」，只要涉及 Go 代码的结构性决策就用它。"
 license: MIT
 compatibility: "Go 1.21+"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*)

@@ -1,3 +1,8 @@
+---
+paths:
+  - "deploy/**"
+---
+
 # K8s 集群运维手册
 
 腾讯云单节点 k3s 上的 blog 集群。**部署步骤见 `../../deploy/k8s/k8s集群部署指南.md`（唯一真相源）** ——
@@ -19,6 +24,12 @@
 全部 Service 为 **headless**。存储 `local-path`，PVC 合计 45Gi，回收策略 `Delete`。
 Ingress 由 k3s 内置 **Traefik 原生 provider** 接管；证书由 **cert-manager + Let's Encrypt** 自动签发续期。
 
+清单约定：
+
+- **存储供给器无需部署** —— k3s 自带 local-path provisioner，`StorageClass/local-path` 随集群创建即存在。**别从上游引入 local-path 清单**：`StorageClass/local-path`、`ClusterRole/local-path-provisioner-role`、`ClusterRoleBinding/local-path-provisioner-bind` 会与内置对象同名冲突。
+- **全部清单显式声明 `namespace: blog`** —— 中间件与应用同命名空间，应用经服务短名直接访问。
+- **凭据已收敛**：所有中间件与应用均引用 Secret `blog-env`（`deploy/k8s/env.yaml`），不再有内联的 `*-secret`。
+
 ## 二、访问方式
 
 ```bash
@@ -29,6 +40,16 @@ kubectl --kubeconfig=deploy/k8s/k8s-config.yaml <cmd>
 - 集群内：服务短名 `mysql` / `redis` / `rabbitmq` / `minio` / `etcd` / `nacos`
 - 集群外：`159.75.154.50` + hostPort（**nacos 与 etcd 不适用** —— 它们没有 hostPort）
 - Nacos 控制台：`https://nacos.veweiyi.cn/`（经 Ingress → 8080）
+
+### 两套 k3s 集群，勿混用
+
+| | 腾讯云 | 本地 |
+|---|---|---|
+| 地址 | `159.75.154.50:6443`（内网 `10.1.20.12`） | `172.18.116.85` |
+| 节点 / 版本 | `k3s-master` / v1.36.4+k3s1 | `dell3080` / v1.35.5 |
+| kubeconfig | `deploy/k8s/k8s-config.yaml`（gitignored） | `~/.kube/config` |
+
+两者集群内容完全不同（本地跑 kumo / ragflow / seafile），**把一边的状态当成另一边的会得出错误结论**。`k8s-config.yaml` 必须带 `tls-server-name: k3s-master` —— API server 证书的 SAN 不含公网 IP，直连会报 x509 校验失败。
 
 ## 三、诊断通道（按性价比排序）
 
@@ -110,5 +131,17 @@ kubectl exec mysql-0 -n blog -- sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" -e
 2. **三种部署形态**：Kubernetes（`deploy/k8s/`）、Docker 单机·生产（CI 拉 ghcr 预构建镜像）、
    Docker 单机·开发自建（`deploy/docker/` 就地构建）—— 改镜像名要三处对齐
    （CI 的 `matrix.service`、k8s 清单、compose）。
-3. **凭据散落处**：`deploy/k8s/env.yaml`（`blog-env`）、`deploy/nacos-config/*` 里的明文密码、
-   `deploy/docker/.env` —— **两边手工保持一致，没有自动同步**。
+3. **凭据散落处**：见 §八 —— 同批密码分散在多处，**手工保持一致，没有自动同步**。
+
+## 八、凭据散落处
+
+**同一批密码散落在四处，手工保持一致，无自动同步** —— 改任何一处都要同步其余：
+
+| 位置 | 内容 |
+|---|---|
+| `deploy/k8s/env.yaml` | Secret `blog-env`，k8s 侧唯一凭据源 |
+| `deploy/nacos-config/{test,prod}/*.yaml` | 应用运行配置里的数据源口令（**已入库**） |
+| `deploy/docker/.env` | Docker 形态的 Nacos 连接参数 |
+| `deploy/docker-compose/*/` | 各中间件 compose 的内联环境变量 |
+
+应用侧另有一处：Nacos 控制台的 `NACOS_USERNAME/PASSWORD` 写在 `deploy/k8s/app/nacos-config.yaml` 这个 **ConfigMap** 里（不是 Secret），技术上该挪走。

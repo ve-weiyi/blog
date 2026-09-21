@@ -1,6 +1,6 @@
 ---
 name: golang-design-review
-description: "审查 Go 代码的设计质量时使用——从包与职责、接口与耦合、并发安全、错误与边界、一致性与简洁五个维度系统检查，每个 finding 标注 file:line 和规则编号，按严重程度（Must Fix / Should Fix / Nit）分级输出。适用于合并前审查、diff review、模块评估等场景。当被要求审查/检查/review Go 代码时主动应用。"
+description: "审查、检查或评审 Go 代码的设计质量时使用，输出带 file:line 与规则编号、按 Must Fix / Should Fix / Nit 分级的报告。当用户要求 review Go 代码、检查某个 .go 模块、合并前过一遍 diff、评估一个包的设计、或问「这段代码有什么问题」时使用。只覆盖设计维度，不替代 gofmt / go vet / golangci-lint。"
 license: MIT
 compatibility: "Go 1.21+"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*)
@@ -9,6 +9,8 @@ allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*)
 # Go 模块设计审查
 
 从五个维度系统审查 Go 代码的设计质量。每个检查项附规则摘要，自包含可独立使用。
+
+**规则编号与 `golang-design` skill 一一对应** —— 两侧的 `N.N` 编号必须指向同一条规则，改任一侧时同步另一侧，否则读者按编号对照会得到不同结论。
 
 ## 审查流程
 

@@ -49,6 +49,9 @@ temp/
 .env.local
 .env.*.local
 
+# Claude Code 个人配置（权限白名单随人而异，不入库）
+.claude/settings.local.json
+
 # Backup / legacy
 scan3d-web/bag/
 

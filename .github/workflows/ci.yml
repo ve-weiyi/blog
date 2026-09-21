@@ -61,6 +61,13 @@ jobs:
       - name: go build
         run: go build ./...
 
+      # 各模块独立构建（关掉 workspace）：workspace 会取全仓最高版本，
+      # 恰好掩盖「模块自身声明的最低依赖版本不可用」这类问题 ——
+      # vkit 的 main 就曾因此无法构建（dbresolver 被解析成与 gorm 不兼容的旧版）。
+      # -mod=mod 仅用于允许就地补 go.sum：本仓 *.sum 全部 gitignore，未入库。
+      - name: go build (standalone)
+        run: GOWORK=off GOFLAGS=-mod=mod go build ./...
+
       - name: go vet
         run: go vet ./...
 

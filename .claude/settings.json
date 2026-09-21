@@ -61,6 +61,10 @@
       "mcp__goland__search_file",
       "mcp__goland__get_file_problems",
       "mcp__goland__lint_files"
+    ],
+    "deny": [
+      "Bash(git push)",
+      "Bash(git push *)"
     ]
   }
 }
