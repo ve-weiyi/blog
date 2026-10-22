@@ -1,0 +1,38 @@
+# ============================================================
+# Ingress：admin.veweiyi.cn（管理后台）
+#   /api  → admin-api:9421
+#   /     → admin-web:80
+#
+# TLS：Secret blog-admin-tls 由 cert-manager 签发（见 certificates.yaml）
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blog-admin-ingress
+  namespace: blog
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: blog-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - admin.veweiyi.cn
+      secretName: blog-admin-tls
+  rules:
+    - host: admin.veweiyi.cn
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-api
+                port:
+                  number: 9421
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-web
+                port:
+                  number: 80

@@ -8,7 +8,7 @@ ENV GOPROXY=https://goproxy.cn,direct
 RUN apk update --no-cache && apk add --no-cache tzdata
 
 # 要构建的服务目录，以仓库根为构建上下文：
-#   blog-cloud/api/admin   blog-cloud/api/app   blog-cloud/rpc/blog
+#   blog-cloud/cmd/api/admin   blog-cloud/cmd/api/app   blog-cloud/cmd/rpc/blog
 ARG SERVICE_DIR
 
 # 以仓库根目录为上下文构建，go.work 与各子模块的 replace 自然生效

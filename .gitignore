@@ -49,6 +49,9 @@ temp/
 .env.local
 .env.*.local
 
+# Claude Code 个人配置（权限白名单随人而异，不入库）
+.claude/settings.local.json
+
 # Backup / legacy
 scan3d-web/bag/
 
@@ -75,3 +78,9 @@ Examples
 *.zip
 *.rar
 *.tgz
+/deploy/k8s/k8s-config.yaml
+
+# 证书与私钥（通用防线。本项目的 TLS 证书由 cert-manager 管理，不以文件形式存在）
+*.key
+*.crt
+*.pem

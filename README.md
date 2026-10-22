@@ -4,20 +4,20 @@
 
 现代化的全栈博客系统 —— Go 微服务后端 + Vue 3 双前端
 
-[![Go](https://img.shields.io/badge/Go-1.25-blue?logo=go)](https://go.dev/)
+[![Go](https://img.shields.io/badge/Go-1.26-blue?logo=go)](https://go.dev/)
 [![Go-Zero](https://img.shields.io/badge/Go--Zero-1.10-yellow?logo=go)](https://go-zero.dev/)
-[![gRPC](https://img.shields.io/badge/gRPC-1.81-brightgreen)](https://grpc.io/)
+[![gRPC](https://img.shields.io/badge/gRPC-1.84-brightgreen)](https://grpc.io/)
 [![GORM](https://img.shields.io/badge/GORM-1.31-red)](https://gorm.io/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql)](https://www.mysql.com/)
-[![Redis](https://img.shields.io/badge/Redis-9.19-purple?logo=redis)](https://redis.io/)
+[![Redis](https://img.shields.io/badge/Redis-7.4-purple?logo=redis)](https://redis.io/)
 [![Vue](https://img.shields.io/badge/Vue-3.5-brightgreen?logo=vuedotjs)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Docker](https://img.shields.io/badge/Docker-blue?logo=docker)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
 
-[🖥️ 博客前台](https://blog.veweiyi.cn) ·
+[🖥️ 博客前台](https://app.veweiyi.cn) ·
 [🖥️ 管理后台](https://admin.veweiyi.cn) ·
-[📑 前台接口文档](https://blog.veweiyi.cn/api/v1/swagger/index.html) ·
+[📑 前台接口文档](https://app.veweiyi.cn/api/v1/swagger/index.html) ·
 [📑 后台接口文档](https://admin.veweiyi.cn/admin-api/v1/swagger/index.html)
 
 </div>
@@ -38,7 +38,7 @@ blog 是一个基于 Go 语言开发的现代化博客系统，采用微服务�
 - **多种登录方式** —— 账号密码、GitHub / QQ / 微信 / Google / 微博 OAuth
 - **实时通信** —— STOMP over WebSocket 聊天室与消息推送
 - **异步解耦** —— RabbitMQ 消息队列处理通知、日志等异步任务
-- **一键部署** —— Docker Compose 本地编排 + Kubernetes 生产部署
+- **三种部署形态** —— Kubernetes、Docker 单机（生产 / 开发·自建），共用同一套镜像命名；选型见 [`deploy/README.md`](./deploy/README.md)
 - **代码生成** —— 内置 goctl 模板与 goctlx 工具，从 API 定义与数据库生成代码
 
 ---
@@ -47,25 +47,26 @@ blog 是一个基于 Go 语言开发的现代化博客系统，采用微服务�
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                        客户端层                                │
-│     博客前台 (blog-app)          管理后台 (blog-admin)          │
+│                           客户端层                           │
+│     博客前台 (blog-app)           管理后台 (blog-admin)      │
 └───────────────────────────┬──────────────────────────────────┘
                             │ HTTP
 ┌───────────────────────────▼──────────────────────────────────┐
-│                      HTTP 网关层                               │
-│     app-api (:9420)                admin-api (:9421)          │
-│     handler → logic → svc                                     │
+│                         HTTP 网关层                          │
+│      app-api (:9420)                admin-api (:9421)        │
+│                    handler → logic → svc                     │
 └───────────────────────────┬──────────────────────────────────┘
                             │ gRPC
 ┌───────────────────────────▼──────────────────────────────────┐
-│                       RPC 服务层                               │
-│                    app-rpc (:9120)                            │
-│      用户 / 权限 / 文章 / 互动 / 通知 / 资源 / 配置 / 分析        │
+│                          RPC 服务层                          │
+│                       blog-rpc (:9120)                       │
+│         用户 / 访客 / 认证 / 访问控制 / 内容 / 媒体          │
+│           讨论 / 聊天 / 站点 / 通知 / 日志 / 统计            │
 └───────────────────────────┬──────────────────────────────────┘
                             │
 ┌───────────────────────────▼──────────────────────────────────┐
-│                       基础设施                                 │
-│   MySQL · Redis · RabbitMQ · Nacos 注册中心 · STOMP WebSocket  │
+│                           基础设施                           │
+│ MySQL · Redis · RabbitMQ · Nacos 注册中心 · STOMP WebSocket  │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -73,15 +74,17 @@ blog 是一个基于 Go 语言开发的现代化博客系统，采用微服务�
 
 ```
 blog/
+├── Makefile          # 一键脚本：初始化、依赖、起停服务
 ├── blog-cloud/       # 后端服务：api/admin、api/app、rpc/blog
+├── blog-gin/         # 后端服务：Gin 单体版
 ├── blog-admin/       # 管理后台前端（Vue 3 + Element Plus）
 ├── blog-app/         # 博客前台前端（Vue 3 + Naive UI）
-├── vkit/             # 公共库：adapter（外部服务适配）、x（标准库扩展）
+├── vkit/             # 公共库：adapter（外部服务适配）、infra（框架封装）、x（通用能力）
 ├── stompws/          # STOMP over WebSocket 服务
 ├── goctlx/           # 代码生成工具（API / 模型 / 前端）
-├── protocol/         # 协议定义：api、rpc、sql
+├── protocol/         # 协议定义：api、proto
 ├── deploy/           # 部署编排：docker、docker-compose、k8s
-├── docs/             # 文档：部署、设计、手册、规范
+├── docs/             # 文档：设计、功能方案、审查、手册、规范
 └── assets/           # 项目截图
 ```
 
@@ -127,18 +130,20 @@ PC 端首页 —— 全屏大图轮播、诗词文案、音乐播放器：
 
 ## 🛠️ 技术栈
 
+> 版本以各模块 `go.mod` / `package.json` 为唯一真相源，本表仅为概览。
+
 ### 后端
 
 | 技术 | 版本 | 说明 |
 |------|------|------|
-| Go | 1.25 | 编程语言 |
+| Go | 1.26 | 编程语言 |
 | go-zero | 1.10 | 微服务框架 |
-| gRPC | 1.81 | RPC 通信框架 |
+| gRPC | 1.84 | RPC 通信框架 |
 | GORM | 1.31 | ORM 框架 |
 | MySQL | 8.0 | 关系型数据库 |
-| Redis | 9.19 | 缓存数据库 |
-| RabbitMQ | 3.12+ | 消息队列 |
-| Nacos | 2.x | 注册中心与配置中心 |
+| Redis | 7.4 | 缓存数据库（服务端 `redis:7.4-alpine`，客户端 go-redis v9.22） |
+| RabbitMQ | 4.3 | 消息队列 |
+| Nacos | 3.1 | 注册中心与配置中心 |
 | JWT | — | 身份认证 |
 | Swagger | 2.0 | API 文档 |
 
@@ -148,10 +153,10 @@ PC 端首页 —— 全屏大图轮播、诗词文案、音乐播放器：
 |------|---------|---------|
 | Vue | 3.5 | 3.5 |
 | TypeScript | 5.9 | 5.9 |
-| Vite | 6.4 | 8.0 |
-| Pinia | 3.0 | 3.0 |
-| UI 组件库 | Naive UI 2.43 | Element Plus 2.13 |
-| UnoCSS | 66.5 | 66.6 |
+| Vite | 8.3 | 8.0 |
+| Pinia | 4.0 | 3.0 |
+| UI 组件库 | Naive UI 2.45 | Element Plus 2.14 |
+| UnoCSS | 66.10 | 66.7 |
 
 ### 部署
 
@@ -164,6 +169,7 @@ Docker · Docker Compose · Kubernetes · Nginx
 | 项目 | 说明 | 仓库 |
 |------|------|------|
 | [blog-cloud](./blog-cloud) | 后端服务（go-zero 微服务版） | [GitHub](https://github.com/ve-weiyi/blog-cloud) |
+| [blog-gin](./blog-gin) | 后端服务（Gin 单体版） | [GitHub](https://github.com/ve-weiyi/blog-gin) |
 | [blog-admin](./blog-admin) | 管理后台前端 | [GitHub](https://github.com/ve-weiyi/blog-admin) |
 | [blog-app](./blog-app) | 博客前台前端 | [GitHub](https://github.com/ve-weiyi/blog-app) |
 | [vkit](./vkit) | 公共库（适配器与工具集） | [GitHub](https://github.com/ve-weiyi/vkit) |
@@ -176,22 +182,23 @@ Docker · Docker Compose · Kubernetes · Nginx
 
 ### 环境要求
 
-- Go 1.25+
-- Node.js 20+ 与 pnpm
+- Go 1.26+（工作区 `go.work` 声明 1.26.1；各模块 `go.mod` 同，`stompws` 为 1.24.0）
+- Node.js 20.19+ / 22.12+ 与 pnpm
 - Docker 与 Docker Compose
-- MySQL 8.0+ · Redis 6.2+ · RabbitMQ 3.12+
+- MySQL 8.0+ · Redis 7.4+ · RabbitMQ 4.3+
 
 ### 1. 克隆项目
 
 ```bash
 git clone --recursive git@github.com:ve-weiyi/blog.git
 cd blog
+make install    # 后端 go mod tidy + 前端 pnpm install
 ```
 
 已克隆但未拉取子模块时：
 
 ```bash
-git submodule update --init --recursive
+make init       # 等价于 git submodule update --init --recursive
 ```
 
 ### 2. 启动依赖服务
@@ -206,20 +213,37 @@ docker compose -f deploy/docker-compose/nacos/nacos.yaml up -d
 ### 3. 启动后端
 
 ```bash
-cd blog-cloud
-
-# 三个终端分别启动，先 RPC 后 API
-go run rpc/blog/app.go -f rpc/blog/etc/app-rpc.yaml
-go run api/app/app.go  -f api/app/etc/app-api.yaml
-go run api/admin/admin.go -f api/admin/etc/admin-api.yaml
+make backend    # rpc → admin-api → app-api 依次拉起，日志写入 logs/
 ```
+
+手工逐个启动（等价）：
+
+```bash
+cd blog-cloud
+go run cmd/rpc/blog/blog.go   -f cmd/rpc/blog/etc/blog-rpc.yaml
+go run cmd/api/app/app.go     -f cmd/api/app/etc/app-api.yaml
+go run cmd/api/admin/admin.go -f cmd/api/admin/etc/admin-api.yaml
+```
+
+> `etc/*.yaml` 是本地配置，被 `.gitignore` 忽略（仓库只跟踪 `.example.yaml`）。
+> 首次需从 example 复制：`cp cmd/rpc/blog/etc/blog-rpc.example.yaml cmd/rpc/blog/etc/blog-rpc.yaml`。
 
 ### 4. 启动前端
 
 ```bash
-cd blog-admin && pnpm install && pnpm dev   # 管理后台
-cd blog-app   && pnpm install && pnpm dev   # 博客前台
+make dev    # 两个前端一起起（mock 模式，不需要后端）
 ```
+
+前端有三种模式，按接口来源区分：
+
+| 命令 | 接口来源 | 需要后端 | 用途 |
+|------|---------|:-------:|------|
+| `pnpm dev` | mock | 否 | 纯前端开发 |
+| `pnpm test` | 本地后端 `:9420` / `:9421` | 是 | 前后端联调 |
+| `pnpm preview` | 构建产物 + mock | 否 | 预览打包结果 |
+
+> `pnpm preview` 的 mock 由 `vite preview` 的服务端中间件承接，只在本地生效；
+> 构建产物直接托管到 nginx 不会带 mock。
 
 ### 5. 一键容器化部署
 
@@ -227,7 +251,25 @@ cd blog-app   && pnpm install && pnpm dev   # 博客前台
 docker compose -f deploy/docker/docker-compose.yml up -d
 ```
 
-Kubernetes 部署见 [`deploy/k8s/`](./deploy/k8s)，完整部署文档见 [`docs/deploy/`](./docs/deploy)。
+部署形态选型见 [`deploy/README.md`](./deploy/README.md)：Kubernetes 走 [`deploy/k8s/`](./deploy/k8s)，
+Docker 单机走 [`deploy/docker/`](./deploy/docker) 与 [`deploy/docker-compose/`](./deploy/docker-compose)。
+
+### 命令速查
+
+根目录 Makefile 收敛了日常操作：
+
+| 命令 | 说明 |
+|------|------|
+| `make init` | 首次初始化全部子模块 |
+| `make fetch` | 更新主仓库 + 全部子模块到最新 |
+| `make install` | 后端 `go mod tidy` + 前端 `pnpm install` |
+| `make dev` | 前端 mock 模式（不起后端） |
+| `make test` | 后端按 Nacos 配置起 + 前端连本地后端 |
+| `make preview` | 前端构建产物 + mock |
+| `make backend` | 仅后端，按本地 yaml 起 |
+| `make frontend` | 仅前端，mock 模式 |
+| `make stop` | 停止前后端运行的端口 |
+| `make clean` | 清理 `logs/` |
 
 ---
 

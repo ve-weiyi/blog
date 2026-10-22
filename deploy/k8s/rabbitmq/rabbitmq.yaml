@@ -1,16 +1,8 @@
 apiVersion: v1
-kind: Secret
-metadata:
-  name: rabbitmq-secret
-type: Opaque
-stringData:
-  username: "veweiyi"
-  password: "rabbitmq7914"
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: rabbitmq-pvc
+  namespace: blog
 spec:
   storageClassName: local-path
   accessModes:
@@ -23,6 +15,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: rabbitmq
+  namespace: blog
 spec:
   clusterIP: None
   selector:
@@ -37,6 +30,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: rabbitmq
+  namespace: blog
 spec:
   serviceName: rabbitmq
   replicas: 1
@@ -50,23 +44,27 @@ spec:
     spec:
       containers:
         - name: rabbitmq
-          image: rabbitmq:management
+          image: rabbitmq:4.3.2-management
           ports:
-            - containerPort: 5672
+            - name: amqp
+              containerPort: 5672
               hostPort: 5672
-            - containerPort: 15672
+            - name: management
+              containerPort: 15672
               hostPort: 15672
           env:
             - name: RABBITMQ_DEFAULT_USER
               valueFrom:
                 secretKeyRef:
-                  name: rabbitmq-secret
-                  key: username
+                  name: blog-env
+                  key: RABBITMQ_USERNAME
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
                 secretKeyRef:
-                  name: rabbitmq-secret
-                  key: password
+                  name: blog-env
+                  key: RABBITMQ_PASSWORD
+            - name: TZ
+              value: Asia/Shanghai
           volumeMounts:
             - name: data
               mountPath: /var/lib/rabbitmq

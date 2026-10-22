@@ -1,8 +1,15 @@
+---
+paths:
+  - "**/*.go"
+  - "**/*.api"
+  - "**/*.proto"
+---
+
 # 后端约定
 
-## 分层与目录结构
+## 分层
 
-后端分层（api：`handler → logic → svc / core`；rpc：`handler → logic → svc / core`）与目录结构见 [`architecture.md`](architecture.md)（唯一真相源）。
+后端分层（api 与 rpc 均为 `handler → logic → svc`）见 [`architecture.md`](architecture.md)（**分层规则的唯一真相源**）。各模块的目录结构以代码为准 —— 规则文件不复制会随代码变动的清单。
 
 ### 各层职责
 
@@ -10,29 +17,30 @@
 
 **logic 层** — 业务编排。api 经 gRPC client 调用下游服务，**禁止**使用 HTTP 相关类型（HTTP 语义不侵入业务层）；rpc 实现核心业务逻辑。目录 `internal/logic/<module>/<method>_logic.go`。
 
-**core 层** — 核心引擎，供 logic 调用：
-
 **svc 层** — 依赖注入容器：配置、gRPC client、DB 连接等。目录 `internal/svc/`。
 
 ## 统一响应格式
 
 ```json
 {
-    "code": "<int>",
-    "msg":  "<string>",
-    "data": "<object>"
+    "code":     "<string>",
+    "message":  "<string>",
+    "data":     "<object>",
+    "trace_id": "<string>"
 }
 ```
 
-- 成功：`code = 200`
-- 错误：`code` 为具体错误码，`msg` 为错误描述
+- 成功：`code = "SUCCESS"`
+- 错误：`code` 为业务错误标识，取值见代码中的标识集合（`bizcode`）；分类与映射规则见 [`docs/design/40-请求管线与响应契约.md`](../../docs/design/40-请求管线与响应契约.md) §2.2；`message` 为错误描述
+- `data` 成败都必须存在，失败时为空对象
+- HTTP 状态码由 `code` 在响应出口派生，**logic 与中间件都只产出 `code`**，不产出 HTTP 状态码
 
 ## API 修改流程
 
 **不可跳步，必须按顺序执行：**
 
 ```
-1. 修改 protocol/api/<service>.api（HTTP 网关）或 protocol/proto/<service>.proto（gRPC）
+1. 修改 protocol/api/<service>/<domain>.api（HTTP 网关）或 protocol/proto/<service>/<domain>.proto（gRPC）
 2. 运行对应 generate.sh 重新生成代码
 3. 修改 types 定义（如有自定义类型）
 4. 修改 logic 层实现业务逻辑

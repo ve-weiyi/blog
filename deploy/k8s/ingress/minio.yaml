@@ -1,0 +1,37 @@
+# ============================================================
+# Ingress：minio.veweiyi.cn → MinIO API（9000）
+#
+# 用途：**图片对外访问**。应用生成的图片地址是明文公开地址而非预签名 URL：
+#   MinioProvider.AccessURL → {CDNDomain}/{bucket}/{key}
+# 因此本域名必须与 StorageConfig.Minio.CDNDomain 完全一致，
+# 否则读者浏览器打开图片会失败。
+#
+# 控制台（9001）未纳入本 Ingress：它与 API 都想占用 / 根路径，同域名无法并存。
+# 目前控制台仍通过节点 hostPort 9001 访问，如需域名请另配一个主机名。
+#
+# TLS：Secret blog-minio-tls 由 cert-manager 签发（见 certificates.yaml）
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-ingress
+  namespace: blog
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: blog-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - minio.veweiyi.cn
+      secretName: blog-minio-tls
+  rules:
+    - host: minio.veweiyi.cn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9000

@@ -1,24 +1,17 @@
 apiVersion: v1
-kind: Secret
-metadata:
-  name: redis-secret
-type: Opaque
-stringData:
-  password: "redis7914"
----
-apiVersion: v1
 kind: ConfigMap
 metadata:
   name: redis-config
+  namespace: blog
 data:
   redis.conf: |
-    requirepass redis7914
     appendonly yes
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: redis-pvc
+  namespace: blog
 spec:
   storageClassName: local-path
   accessModes:
@@ -31,6 +24,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis
+  namespace: blog
 spec:
   clusterIP: None
   selector:
@@ -43,6 +37,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: redis
+  namespace: blog
 spec:
   serviceName: redis
   replicas: 1
@@ -56,11 +51,19 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:alpine
-          command: ["redis-server", "/etc/redis/redis.conf"]
+          image: redis:7.4-alpine
+          command: ["/bin/sh", "-c"]
+          args:
+            - exec redis-server /etc/redis/redis.conf --requirepass $REDIS_PASSWORD
           ports:
             - containerPort: 6379
               hostPort: 6379
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: blog-env
+                  key: REDIS_PASSWORD
           volumeMounts:
             - name: data
               mountPath: /data

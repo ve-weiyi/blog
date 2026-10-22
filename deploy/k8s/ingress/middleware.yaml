@@ -1,0 +1,19 @@
+# ============================================================
+# Traefik Middleware：HTTP → HTTPS 永久重定向
+#
+# 由各 Ingress 通过注解引用：
+#   traefik.ingress.kubernetes.io/router.middlewares: blog-redirect-https@kubernetescrd
+# 注解除名称外还要带命名空间前缀，格式为 <namespace>-<name>@kubernetescrd
+#
+# 原清单里的 nginx.ingress.kubernetes.io/force-ssl-redirect 对 Traefik 无效，
+# 由本资源替代。
+# ============================================================
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: blog
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

@@ -1,6 +1,6 @@
 # API 治理实践：从接口规范到全链路管控
 
-> 本文是 [HTTP RPC 风格 API 设计规范](API设计规范(RPC风格).md) 和 [HTTP REST API 设计规范](API设计规范(RESTful风格).md) 的配套阅读材料，从工程实践角度解释"为什么这么选"以及"怎么落地"。
+> 本文是 [HTTP RPC 风格 API 设计规范](../standards/API设计规范-RPC风格.md) 和 [HTTP REST API 设计规范](../standards/API设计规范-RESTful风格.md) 的配套阅读材料，从工程实践角度解释"为什么这么选"以及"怎么落地"。
 
 **一道可以测试技术团队成熟度的题目：**
 

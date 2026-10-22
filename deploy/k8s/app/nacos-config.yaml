@@ -1,0 +1,16 @@
+# ============================================================
+# Nacos Configuration
+# 由三个后端服务的 envFrom 引用，其键以 $(VAR) 形式展开进各服务的启动参数
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nacos-config
+  namespace: blog
+data:
+  NACOS_HOST: "nacos"
+  NACOS_PORT: "8848"
+  NACOS_USERNAME: "nacos"
+  NACOS_PASSWORD: "nacos"
+  NACOS_NAMESPACE: "prod"
+  NACOS_GROUP: "veweiyi.cn"

@@ -1,16 +1,8 @@
 apiVersion: v1
-kind: Secret
-metadata:
-  name: mysql-secret
-type: Opaque
-stringData:
-  root-password: "mysql7914"
-  password: "mysql7914"
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mysql-pvc
+  namespace: blog
 spec:
   storageClassName: local-path
   accessModes:
@@ -23,6 +15,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mysql
+  namespace: blog
 spec:
   clusterIP: None
   selector:
@@ -35,6 +28,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
+  namespace: blog
 spec:
   serviceName: mysql
   replicas: 1
@@ -49,6 +43,9 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.0.34
+          args:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_0900_ai_ci
           ports:
             - containerPort: 3306
               hostPort: 3306
@@ -56,20 +53,25 @@ spec:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: root-password
+                  name: blog-env
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: blog-env
+                  key: MYSQL_DEFAULT_DATABASE
             - name: MYSQL_USER
-              value: veweiyi
+              valueFrom:
+                secretKeyRef:
+                  name: blog-env
+                  key: MYSQL_USER
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: password
+                  name: blog-env
+                  key: MYSQL_PASSWORD
             - name: TZ
               value: Asia/Shanghai
-          args:
-            - --character-set-server=utf8mb4
-            - --collation-server=utf8mb4_general_ci
           volumeMounts:
             - name: data
               mountPath: /var/lib/mysql

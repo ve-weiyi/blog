@@ -295,8 +295,10 @@ rpc BookPublish(BookPublishRequest) returns (BookPublishResponse);
 | `Get` | 获取（标准） | `GetUser` |
 | `List` | 列表（标准） | `ListUsers` |
 | `Create` | 创建（标准） | `CreateOrder` |
-| `Update` | 更新（标准） | `UpdateProfile` |
+| `Update` | **全量**更新（标准） | `UpdateProfile` |
+| `Patch` | **部分**更新（只改资源的一部分字段） | `PatchArticle` |
 | `Delete` | 删除（标准） | `DeleteComment` |
+| `Destroy` | **彻底**删除（不可逆；区别于可恢复的 `Delete`） | `BatchDestroyPhotos` |
 | `Batch{Verb}` | 批量操作 | `BatchDeleteMessages` |
 | `Search` | 搜索（不同于 List 的简单筛选） | `SearchProducts` |
 | `Send` | 发送 | `SendNotification` |
@@ -313,6 +315,20 @@ rpc BookPublish(BookPublishRequest) returns (BookPublishResponse);
 | `Reject` | 拒绝 | `RejectApplication` |
 | `Assign` | 分配 | `AssignRole` |
 | `Unassign` | 取消分配 | `UnassignRole` |
+
+**`Update` 与 `Patch` 的分工**（本项目采用）：
+
+- `Update{Resource}` —— 覆盖该资源**全部**客户端可写字段
+- `Patch{Resource}` —— 只覆盖**一部分**；状态位（`is_delete` / `status` / `is_top` / `enabled`）一律归 `Patch`
+
+> 与 AIP-134 的差异：AIP 用 `Update` + `google.protobuf.FieldMask` 表达部分更新，不引入 `Patch` 动词。本项目采用 `Update`/`Patch` 二分，理由是它让"这次是全量还是部分"在方法名上直接可见，无需读 body 的 mask。
+
+**`Delete` 与 `Destroy` 的分工**（本项目采用）：
+
+- `Delete` —— 常规删除
+- `Destroy` —— **不可逆**的物理删除
+
+> 二者是不同业务动作、不同权限点。共用一个词会让读者把可恢复的与不可逆的搞反。
 
 ### 5.4 避免使用的动词
 

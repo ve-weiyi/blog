@@ -1,0 +1,42 @@
+# ============================================================
+# cert-manager ClusterIssuer：Let's Encrypt
+#
+# staging 与 production 各一个。首次部署先用 staging 验证 HTTP-01 链路，
+# 确认无误后把 certificates.yaml 里的 issuerRef 切到 letsencrypt-prod。
+#
+# 为什么不直接上 production：Let's Encrypt 对同一组域名每周只允许重签 5 次，
+# 拿生产环境试错可能一次赔进去一周。
+#
+# 前置条件（均已满足）：
+#   - 各域名的 A 记录指向节点
+#   - 节点 80 端口对公网开放（HTTP-01 验证由 Traefik 承接临时 Ingress）
+# ============================================================
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: 791422171@qq.com
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: 791422171@qq.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: traefik

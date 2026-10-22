@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package blog.chat.v1;
+
+option go_package = "./chatrpc";
+
+// ============================================
+// 通用消息定义
+// ============================================
+
+message ListResult {
+  int64 page = 1;                  // 当前页码
+  int64 page_size = 2;             // 每页数量
+  int64 total = 3;                 // 总数
+}
+
+// ============================================
+// 核心数据模型
+// ============================================
+
+// 聊天记录
+message Chat {
+  int64 id = 1;                    // 主键
+  string user_id = 2;              // 用户ID
+  string device_id = 3;          // 设备ID
+  string ip_address = 4;           // IP地址
+  string ip_source = 5;            // IP归属地
+  string nickname = 6;             // 昵称
+  string avatar = 7;               // 头像
+  string type = 8;                 // 类型
+  string content = 9;              // 聊天内容
+  int64 status = 10;               // 状态
+  int64 created_at = 11;           // 创建时间（时间戳，毫秒）
+  int64 updated_at = 12;           // 更新时间（时间戳，毫秒）
+}
+
+// ============================================
+// 聊天记录管理
+// ============================================
+
+// 按时间窗口查询（after/before/limit），不使用 ListQuery
+message ListChatsRequest {
+  int64 after = 1;                 // 起始时间
+  int64 before = 2;                // 截止时间
+  int64 limit = 3;                 // 数量限制
+  optional string user_id = 4;     // 用户ID
+  optional string type = 5;        // 类型
+  optional string content = 6;     // 聊天内容
+  optional int64 status = 7;       // 状态
+}
+
+message ListChatsResponse {
+  ListResult list_result = 1;      // 分页结果
+  repeated Chat list = 2;          // 聊天记录列表
+}
+
+message GetChatRequest {
+  int64 id = 1;                    // 主键
+}
+
+message GetChatResponse {
+  Chat chat = 1;                   // 聊天记录
+}
+
+message CreateChatRequest {
+  string user_id = 1;              // 用户ID
+  string device_id = 2;          // 设备ID
+  string ip_address = 3;           // IP地址
+  string ip_source = 4;            // IP归属地
+  string nickname = 5;             // 昵称
+  string avatar = 6;               // 头像
+  string type = 7;                 // 类型
+  string content = 8;              // 聊天内容
+  int64 status = 9;                // 状态
+}
+
+message CreateChatResponse {
+  int64 id = 1;                    // 主键
+}
+
+message UpdateChatRequest {
+  int64 id = 1;                    // 主键
+  string nickname = 2;             // 昵称
+  string avatar = 3;               // 头像
+  string type = 4;                 // 类型
+  string content = 5;              // 聊天内容
+  int64 status = 6;                // 状态
+}
+
+message UpdateChatResponse {
+  bool success = 1;
+}
+
+message BatchDeleteChatsRequest {
+  repeated int64 ids = 1;          // ID列表
+}
+
+message BatchDeleteChatsResponse {
+  int64 success_count = 1;
+}
+
+// ============================================
+// 服务定义
+// ============================================
+
+service ChatService {
+  // 查询聊天记录列表
+  rpc ListChats(ListChatsRequest) returns (ListChatsResponse);
+  // 查询聊天记录
+  rpc GetChat(GetChatRequest) returns (GetChatResponse);
+  // 创建聊天记录
+  rpc CreateChat(CreateChatRequest) returns (CreateChatResponse);
+  // 更新聊天记录
+  rpc UpdateChat(UpdateChatRequest) returns (UpdateChatResponse);
+  // 批量删除聊天记录
+  rpc BatchDeleteChats(BatchDeleteChatsRequest) returns (BatchDeleteChatsResponse);
+}

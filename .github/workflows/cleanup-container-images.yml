@@ -36,7 +36,7 @@ jobs:
         run: |
           INPUT="${{ github.event.inputs.packages }}"
           if [ "$INPUT" = "all" ] || [ -z "$INPUT" ]; then
-            MATRIX_JSON='[{"package":"blog-app-rpc"},{"package":"blog-app-api"},{"package":"blog-admin-api"},{"package":"blog-admin-web"},{"package":"blog-app-web"}]'
+            MATRIX_JSON='[{"package":"blog-rpc"},{"package":"app-api"},{"package":"admin-api"},{"package":"admin-web"},{"package":"app-web"}]'
           else
             MATRIX_JSON=$(echo "$INPUT" | jq -R -c 'split(",") | map(select(length > 0) | {package: .})')
           fi
