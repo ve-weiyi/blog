@@ -26,6 +26,9 @@ spec:
           image: ghcr.io/ve-weiyi/blog-rpc:latest
           ports:
             - containerPort: 9120
+            # Prometheus 指标端口；抓取侧（ServiceMonitor / scrape config）按需配置
+            - containerPort: 9101
+              name: metrics
           envFrom:
             - configMapRef:
                 name: nacos-config
@@ -84,5 +87,10 @@ spec:
   selector:
     app: blog-rpc
   ports:
-    - port: 9120
+    - name: rpc
+      port: 9120
       targetPort: 9120
+    # Prometheus 抓取目标：blog-rpc.blog.svc:9101/metrics
+    - name: metrics
+      port: 9101
+      targetPort: 9101

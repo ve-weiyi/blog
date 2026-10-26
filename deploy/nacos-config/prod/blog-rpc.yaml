@@ -12,6 +12,12 @@ Log:
   Mode: console
   Encoding: plain
 
+# Prometheus 指标（go-zero 内置 agent）。不配置 Host 不启动监听。
+Prometheus:
+  Host: 0.0.0.0
+  Port: 9101
+  Path: /metrics
+
 MysqlConf:
   Host: mysql
   Port: "3306"
