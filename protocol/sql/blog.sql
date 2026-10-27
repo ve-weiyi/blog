@@ -48,7 +48,7 @@ CREATE TABLE `t_api` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `idx_path_method` (`path`,`method`,`name`) USING BTREE
+  UNIQUE KEY `idx_path_method_name` (`path`,`method`,`name`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='接口';
 
 -- ----------------------------
@@ -71,7 +71,9 @@ CREATE TABLE `t_article` (
   `view_count` bigint NOT NULL DEFAULT '0' COMMENT '查看数',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发表时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_delete_status_id` (`is_delete`,`status`,`id`) USING BTREE,
+  KEY `idx_category_delete_status_id` (`category_id`,`is_delete`,`status`,`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='文章';
 
 -- ----------------------------
@@ -114,7 +116,7 @@ CREATE TABLE `t_chat` (
   `ip_source` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户地址 广东省深圳市',
   `type` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '类型:chatgpt chatroom',
   `content` varchar(4096) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '聊天内容',
-  `status` bigint NOT NULL DEFAULT '0' COMMENT '状态:0正常 1编辑 2撤回 3删除',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态:0正常 1编辑 2撤回 3删除',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
@@ -132,10 +134,10 @@ CREATE TABLE `t_comment` (
   `topic_id` bigint NOT NULL DEFAULT '0' COMMENT '主题id',
   `parent_id` bigint NOT NULL DEFAULT '0' COMMENT '父评论id',
   `reply_id` bigint NOT NULL DEFAULT '0' COMMENT '回复评论id',
-  `reply_user_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '评论回复用户id',
+  `reply_user_id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '评论回复用户id',
   `comment_content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '评论内容',
-  `type` bigint NOT NULL DEFAULT '0' COMMENT '评论类型 1.文章 2.友链 3.说说',
-  `status` bigint NOT NULL DEFAULT '0' COMMENT '状态 0.正常 1.已编辑 2.已删除',
+  `type` tinyint NOT NULL DEFAULT '0' COMMENT '评论类型 1.文章 2.友链 3.说说',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态 0.正常 1.已编辑 2.已删除',
   `is_review` tinyint NOT NULL DEFAULT '0' COMMENT '审核状态：0-未审核 1-已通过',
   `like_count` bigint NOT NULL DEFAULT '0' COMMENT '评论点赞数量',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -143,7 +145,8 @@ CREATE TABLE `t_comment` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `fk_comment_user` (`user_id`) USING BTREE,
   KEY `fk_comment_parent` (`parent_id`) USING BTREE,
-  KEY `idx_is_review` (`is_review`) USING BTREE
+  KEY `idx_review_created` (`is_review`,`created_at`) USING BTREE,
+  KEY `idx_type_topic_created` (`type`,`topic_id`,`created_at`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='评论';
 
 -- ----------------------------
@@ -152,12 +155,12 @@ CREATE TABLE `t_comment` (
 DROP TABLE IF EXISTS `t_config`;
 CREATE TABLE `t_config` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `key` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '关键词',
+  `config_key` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '关键词',
   `config` varchar(4096) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '配置信息',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `uk_key` (`key`)
+  UNIQUE KEY `uk_config_key` (`config_key`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='网站配置表';
 
 -- ----------------------------
@@ -166,7 +169,7 @@ CREATE TABLE `t_config` (
 DROP TABLE IF EXISTS `t_daily_stats`;
 CREATE TABLE `t_daily_stats` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `date` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '统计日期 YYYY-MM-DD',
+  `date` date NOT NULL COMMENT '统计日期 YYYY-MM-DD',
   `new_users` bigint NOT NULL DEFAULT '0' COMMENT '当日新增用户数',
   `total_users` bigint NOT NULL DEFAULT '0' COMMENT '累计用户数',
   `active_users` bigint NOT NULL DEFAULT '0' COMMENT '当日活跃用户数',
@@ -214,6 +217,21 @@ CREATE TABLE `t_guest` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2050 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='游客信息';
 
 -- ----------------------------
+-- Table structure for t_like
+-- ----------------------------
+DROP TABLE IF EXISTS `t_like`;
+CREATE TABLE `t_like` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `target_type` tinyint NOT NULL DEFAULT '0' COMMENT '目标类型 1.文章 2.说说 3.评论',
+  `target_id` bigint NOT NULL DEFAULT '0' COMMENT '目标id',
+  `user_id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '点赞用户id',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uk_target_user` (`target_type`,`target_id`,`user_id`) USING BTREE,
+  KEY `idx_user` (`user_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='点赞记录';
+
+-- ----------------------------
 -- Table structure for t_login_log
 -- ----------------------------
 DROP TABLE IF EXISTS `t_login_log`;
@@ -221,10 +239,11 @@ CREATE TABLE `t_login_log` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '日志ID',
   `user_id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户id',
   `device_id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '设备id',
-  `login_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '登录类型：password-密码登录 sms-短信登录',
-  `status` bigint NOT NULL DEFAULT '1' COMMENT '登录状态：0-失败 1-成功',
+  `event_type` tinyint NOT NULL DEFAULT '1' COMMENT '事件类型 1登录 2登出',
+  `login_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '登录类型：password-密码登录 sms-短信登录（登出事件为空）',
+  `logout_type` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '登出类型：手动登出/超时/强制下线（登录事件为空）',
+  `status` tinyint NOT NULL DEFAULT '1' COMMENT '登录状态：0-失败 1-成功（登出事件恒为 1）',
   `fail_reason` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '失败原因',
-  `logout_at` datetime DEFAULT NULL COMMENT '登出时间',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
@@ -246,7 +265,7 @@ CREATE TABLE `t_menu` (
   `type` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '菜单类型',
   `title` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '菜单标题',
   `icon` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '菜单图标',
-  `rank` bigint NOT NULL DEFAULT '0' COMMENT '排序',
+  `rank` int NOT NULL DEFAULT '0' COMMENT '排序',
   `perm` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '权限标识',
   `params` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '路由参数',
   `keep_alive` tinyint NOT NULL DEFAULT '0' COMMENT '是否缓存',
@@ -266,10 +285,10 @@ CREATE TABLE `t_menu` (
 DROP TABLE IF EXISTS `t_message`;
 CREATE TABLE `t_message` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `user_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '用户id',
-  `device_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '终端id',
+  `user_id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户id',
+  `device_id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '终端id',
   `message_content` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '留言内容',
-  `status` bigint NOT NULL DEFAULT '0' COMMENT '状态:0正常 1编辑 2撤回 3删除',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态:0正常 1编辑 2撤回 3删除',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
@@ -286,7 +305,7 @@ CREATE TABLE `t_notify_message` (
   `category` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'system' COMMENT '分类：system | maintenance | update | remind',
   `level` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'info' COMMENT '等级：info | warning | error',
   `target_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all' COMMENT '目标类型：all | user_ids',
-  `target_ids` text COLLATE utf8mb4_unicode_ci COMMENT '目标用户ID列表，逗号分隔',
+  `target_ids` json DEFAULT NULL COMMENT '目标用户ID列表',
   `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft' COMMENT '状态：draft | published | revoked',
   `published_at` datetime DEFAULT NULL COMMENT '发布时间',
   `published_by` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '发布人',
@@ -317,10 +336,10 @@ CREATE TABLE `t_notify_record` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_message_id` (`message_id`) USING BTREE,
-  KEY `idx_channel` (`channel`) USING BTREE,
   KEY `idx_recipient` (`recipient`) USING BTREE,
   KEY `idx_status` (`status`) USING BTREE,
-  UNIQUE KEY `uk_biz_channel` (`biz_id`,`channel`) USING BTREE
+  KEY `idx_channel` (`channel`) USING BTREE,
+  KEY `idx_biz_id` (`biz_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一投递记录表';
 
 -- ----------------------------
@@ -338,7 +357,7 @@ CREATE TABLE `t_notify_template` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `uk_code_channel` (`code`,`channel`) USING BTREE
+  UNIQUE KEY `uk_scene_channel` (`scene`,`channel`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='通知模板表';
 
 -- ----------------------------
@@ -355,11 +374,13 @@ CREATE TABLE `t_operation_log` (
   `request_method` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '请求方式',
   `request_data` varchar(4096) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '请求参数',
   `response_data` varchar(4096) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '返回数据',
-  `response_status` bigint NOT NULL DEFAULT '0' COMMENT '响应状态码',
-  `cost` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '耗时（ms）',
+  `response_status` smallint NOT NULL DEFAULT '0' COMMENT '响应状态码',
+  `cost` int NOT NULL DEFAULT '0' COMMENT '耗时（ms）',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_created_at` (`created_at`) USING BTREE,
+  KEY `idx_user_id` (`user_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='操作记录';
 
 -- ----------------------------
@@ -372,7 +393,7 @@ CREATE TABLE `t_page` (
   `page_label` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '页面标签',
   `page_cover` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '页面封面',
   `is_carousel` tinyint NOT NULL DEFAULT '0' COMMENT '是否轮播',
-  `carousel_covers` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '轮播图片列表',
+  `carousel_covers` json DEFAULT NULL COMMENT '轮播图片列表',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
@@ -391,7 +412,8 @@ CREATE TABLE `t_photo` (
   `is_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_album` (`album_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='照片';
 
 -- ----------------------------
@@ -420,7 +442,8 @@ CREATE TABLE `t_role_api` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `role_id` bigint NOT NULL DEFAULT '0' COMMENT '角色id',
   `api_id` bigint NOT NULL DEFAULT '0' COMMENT '接口id',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_role` (`role_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色-api关联';
 
 -- ----------------------------
@@ -431,7 +454,8 @@ CREATE TABLE `t_role_menu` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `role_id` bigint NOT NULL DEFAULT '0' COMMENT '角色id',
   `menu_id` bigint NOT NULL DEFAULT '0' COMMENT '菜单id',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_role` (`role_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色-菜单关联';
 
 -- ----------------------------
@@ -455,7 +479,7 @@ CREATE TABLE `t_talk` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '说说id',
   `user_id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户id',
   `content` varchar(2048) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '说说内容',
-  `images` varchar(2048) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '图片',
+  `images` json DEFAULT NULL COMMENT '图片',
   `is_top` tinyint NOT NULL DEFAULT '0' COMMENT '是否置顶',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态 1.公开 2.私密',
   `like_count` bigint NOT NULL DEFAULT '0' COMMENT '点赞数',
@@ -476,7 +500,7 @@ CREATE TABLE `t_upload_log` (
   `file_name` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '文件名称',
   `file_type` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '文件类型',
   `file_size` bigint NOT NULL DEFAULT '0' COMMENT '文件大小',
-  `file_md5` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '文件md5值',
+  `file_md5` char(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '文件md5值',
   `file_url` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '上传路径',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -498,8 +522,8 @@ CREATE TABLE `t_user` (
   `avatar` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户头像URL',
   `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '邮箱',
   `mobile` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '手机号',
-  `info` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户信息',
-  `status` bigint NOT NULL DEFAULT '0' COMMENT '账号状态：0-正常 1-禁用 2-注销',
+  `info` json DEFAULT NULL COMMENT '用户信息',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '账号状态：0-正常 1-禁用 2-注销',
   `register_type` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '注册方式',
   `ip_address` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '注册ip',
   `ip_source` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '注册ip 源',
@@ -511,9 +535,7 @@ CREATE TABLE `t_user` (
   UNIQUE KEY `uk_username` (`username`) USING BTREE,
   UNIQUE KEY `uk_email` (`email`) USING BTREE,
   UNIQUE KEY `uk_mobile` (`mobile`) USING BTREE,
-  KEY `idx_status` (`status`) USING BTREE,
-  KEY `idx_created_at` (`created_at`) USING BTREE,
-  KEY `idx_deleted_at` (`deleted_at`) USING BTREE
+  KEY `idx_status` (`status`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户登录信息';
 
 -- ----------------------------
@@ -542,7 +564,9 @@ CREATE TABLE `t_user_role` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `user_id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户id',
   `role_id` bigint NOT NULL DEFAULT '0' COMMENT '角色id',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_user` (`user_id`) USING BTREE,
+  KEY `idx_role` (`role_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户-角色关联';
 
 -- ----------------------------
