@@ -67,7 +67,6 @@ CREATE TABLE `t_article` (
   `is_top` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否置顶 0否 1是',
   `is_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除  0否 1是',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态值 1公开 2私密 3草稿 4评论可见',
-  `like_count` bigint NOT NULL DEFAULT '0' COMMENT '点赞数',
   `view_count` bigint NOT NULL DEFAULT '0' COMMENT '查看数',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发表时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -139,7 +138,6 @@ CREATE TABLE `t_comment` (
   `type` tinyint NOT NULL DEFAULT '0' COMMENT '评论类型 1.文章 2.友链 3.说说',
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态 0.正常 1.已编辑 2.已删除',
   `is_review` tinyint NOT NULL DEFAULT '0' COMMENT '审核状态：0-未审核 1-已通过',
-  `like_count` bigint NOT NULL DEFAULT '0' COMMENT '评论点赞数量',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
@@ -228,7 +226,8 @@ CREATE TABLE `t_like` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uk_target_user` (`target_type`,`target_id`,`user_id`) USING BTREE,
-  KEY `idx_user` (`user_id`) USING BTREE
+  KEY `idx_user_target` (`user_id`,`target_type`,`target_id`) USING BTREE,
+  KEY `idx_user_created` (`user_id`,`target_type`,`created_at`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='点赞记录';
 
 -- ----------------------------
@@ -482,7 +481,6 @@ CREATE TABLE `t_talk` (
   `images` json DEFAULT NULL COMMENT '图片',
   `is_top` tinyint NOT NULL DEFAULT '0' COMMENT '是否置顶',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态 1.公开 2.私密',
-  `like_count` bigint NOT NULL DEFAULT '0' COMMENT '点赞数',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE

@@ -32,6 +32,7 @@ message ArticlePreview {
   int64 created_at = 4;            // 发表时间（时间戳，毫秒）
   int64 like_count = 5;            // 点赞数
   int64 view_count = 6;            // 查看数量
+  bool liked = 7;                  // 当前用户是否已赞
 }
 
 // 文章分类（嵌套用）
@@ -65,6 +66,7 @@ message Article {
   repeated ArticleTag tags = 15;   // 标签列表
   int64 like_count = 16;           // 点赞数
   int64 view_count = 17;           // 查看数量
+  bool liked = 18;                 // 当前用户是否已赞
 }
 
 // 分类
@@ -208,15 +210,8 @@ message LikeArticleRequest {
 }
 
 message LikeArticleResponse {
-  bool success = 1;
-}
-
-message GetUserLikeArticleRequest {
-  string user_id = 1;              // 用户ID
-}
-
-message GetUserLikeArticleResponse {
-  repeated int64 like_article_ids = 1; // 点赞文章ID列表
+  bool liked = 1;                  // 操作后的状态
+  bool changed = 2;                // 本次调用是否改变了状态
 }
 
 // ============================================
@@ -340,8 +335,8 @@ service ContentService {
   rpc IncrementArticleView(IncrementArticleViewRequest) returns (IncrementArticleViewResponse);
   // 点赞文章
   rpc LikeArticle(LikeArticleRequest) returns (LikeArticleResponse);
-  // 查询用户点赞的文章
-  rpc GetUserLikeArticle(GetUserLikeArticleRequest) returns (GetUserLikeArticleResponse);
+  // 取消点赞文章
+  rpc UnlikeArticle(LikeArticleRequest) returns (LikeArticleResponse);
 
   // ==================== 分类管理 ====================
 

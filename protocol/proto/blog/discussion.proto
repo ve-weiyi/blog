@@ -51,6 +51,7 @@ message Comment {
   int64 updated_at = 12;           // 更新时间（时间戳，毫秒）
   int64 like_count = 13;           // 点赞数
   int64 is_review = 14;            // 审核状态：0-未审核 1-已通过
+  bool liked = 15;                 // 当前用户是否已赞
 }
 
 // ============================================
@@ -247,15 +248,8 @@ message LikeCommentRequest {
 }
 
 message LikeCommentResponse {
-  bool success = 1;
-}
-
-message GetUserLikeCommentRequest {
-  string user_id = 1;              // 用户ID
-}
-
-message GetUserLikeCommentResponse {
-  repeated int64 like_comment_ids = 1; // 点赞评论ID列表
+  bool liked = 1;                  // 操作后的状态
+  bool changed = 2;                // 本次调用是否改变了状态
 }
 
 // ============================================
@@ -274,6 +268,7 @@ message Talk {
   int64 updated_at = 8;            // 更新时间（时间戳，毫秒）
   int64 like_count = 9;            // 点赞量
   int64 comment_count = 10;        // 评论量
+  bool liked = 11;                 // 当前用户是否已赞
 }
 
 message ListTalksRequest {
@@ -332,15 +327,8 @@ message LikeTalkRequest {
 }
 
 message LikeTalkResponse {
-  bool success = 1;
-}
-
-message GetUserLikeTalkRequest {
-  string user_id = 1;              // 用户ID
-}
-
-message GetUserLikeTalkResponse {
-  repeated int64 like_talk_ids = 1; // 点赞说说ID列表
+  bool liked = 1;                  // 操作后的状态
+  bool changed = 2;                // 本次调用是否改变了状态
 }
 
 // ============================================
@@ -389,8 +377,8 @@ service DiscussionService {
   rpc GetCommentReplyCount(GetCommentReplyCountRequest) returns (GetCommentReplyCountResponse);
   // 点赞评论
   rpc LikeComment(LikeCommentRequest) returns (LikeCommentResponse);
-  // 查询用户点赞的评论
-  rpc GetUserLikeComment(GetUserLikeCommentRequest) returns (GetUserLikeCommentResponse);
+  // 取消点赞评论
+  rpc UnlikeComment(LikeCommentRequest) returns (LikeCommentResponse);
 
   // ==================== 说说 ====================
 
@@ -406,7 +394,7 @@ service DiscussionService {
   rpc BatchDeleteTalks(BatchDeleteTalksRequest) returns (BatchDeleteTalksResponse);
   // 点赞说说
   rpc LikeTalk(LikeTalkRequest) returns (LikeTalkResponse);
-  // 查询用户点赞的说说
-  rpc GetUserLikeTalk(GetUserLikeTalkRequest) returns (GetUserLikeTalkResponse);
+  // 取消点赞说说
+  rpc UnlikeTalk(LikeTalkRequest) returns (LikeTalkResponse);
 
 }

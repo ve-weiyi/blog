@@ -5,7 +5,7 @@ import (
 
 	"github.com/zeromicro/go-zero/rest/httpx"
 
-	"github.com/ve-weiyi/blog-cloud/infra/responsex"
+	"github.com/ve-weiyi/blog-cloud/infra/http/responsex"
 	{{.ImportPackages}}
 )
 
@@ -15,17 +15,13 @@ func {{.HandlerName}}(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		{{if .HasRequest -}}
 		var req types.{{.RequestType}}
 		if err := httpx.Parse(r, &req); err != nil {
-			responsex.Response(r, w, nil, err)
+			responsex.RequestInvalid(r, w, err)
 			return
 		}
 		{{- end}}
 
 		l := {{.LogicName}}.New{{.LogicType}}(r.Context(), svcCtx)
 		{{if .HasResp -}}resp, {{- end}}err := l.{{.Call}}({{if .HasRequest -}}&req{{- end}})
-		{{- if .HasResp}}
-		responsex.Response(r, w, resp, err)
-		{{- else}}
-		responsex.Response(r, w, nil, err)
-		{{- end}}
+		responsex.Response(r, w, {{if .HasResp}}resp{{else}}nil{{end}}, err)
 	}
 }

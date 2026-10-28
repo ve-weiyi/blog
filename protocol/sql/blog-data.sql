@@ -59,8 +59,8 @@ VALUES (1, '默认标签', '2024-01-01 00:00:00', '2024-01-01 00:00:00');
 -- ----------------------------
 -- Records of t_article (示例文章)
 -- ----------------------------
-INSERT INTO `t_article` (`id`, `user_id`, `category_id`, `article_cover`, `article_title`, `article_content`, `article_type`, `original_url`, `is_top`, `is_delete`, `status`, `like_count`, `view_count`, `created_at`, `updated_at`)
-VALUES (1, '1', 1, '', 'Hello World', '欢迎使用 blog！这是一篇示例文章。', 1, '', 1, 0, 1, 0, 0, '2024-01-01 00:00:00', '2024-01-01 00:00:00');
+INSERT INTO `t_article` (`id`, `user_id`, `category_id`, `article_cover`, `article_title`, `article_content`, `article_type`, `original_url`, `is_top`, `is_delete`, `status`, `view_count`, `created_at`, `updated_at`)
+VALUES (1, '1', 1, '', 'Hello World', '欢迎使用 blog！这是一篇示例文章。', 1, '', 1, 0, 1, 0, '2024-01-01 00:00:00', '2024-01-01 00:00:00');
 
 -- ----------------------------
 -- Records of t_article_tag
@@ -77,8 +77,8 @@ VALUES (1, 'blog', '', 'https://github.com/ve-weiyi', '一个全栈博客系统'
 -- ----------------------------
 -- Records of t_talk (示例说说)
 -- ----------------------------
-INSERT INTO `t_talk` (`id`, `user_id`, `content`, `images`, `is_top`, `status`, `like_count`, `created_at`, `updated_at`)
-VALUES (1, '1', '博客运行成功！', '', 1, 1, 0, '2024-01-01 00:00:00', '2024-01-01 00:00:00');
+INSERT INTO `t_talk` (`id`, `user_id`, `content`, `images`, `is_top`, `status`, `created_at`, `updated_at`)
+VALUES (1, '1', '博客运行成功！', '', 1, 1, '2024-01-01 00:00:00', '2024-01-01 00:00:00');
 
 -- ----------------------------
 -- Records of t_notify_template (示例通知模板)

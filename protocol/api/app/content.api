@@ -19,6 +19,7 @@ type (
 		TagNameList    []string `json:"tag_name_list"`
 		LikeCount      int64    `json:"like_count"`
 		ViewCount      int64    `json:"view_count"`
+		Liked          bool     `json:"liked"` // 当前用户是否已赞
 	}
 	ArticlePreview {
 		Id           int64  `json:"id"`
@@ -26,6 +27,7 @@ type (
 		ArticleTitle string `json:"article_title"`
 		LikeCount    int64  `json:"like_count"`
 		ViewCount    int64  `json:"view_count"`
+		Liked        bool   `json:"liked"` // 当前用户是否已赞
 		CreatedAt    int64  `json:"created_at"`
 	}
 	ArticleDetails {
@@ -93,7 +95,11 @@ service app-api {
 service app-api {
 	@doc "点赞文章"
 	@handler LikeArticle
-	post /articles/:id/like (LikeArticleReq) returns (EmptyResp)
+	post /articles/:id/like (LikeArticleReq) returns (LikeResult)
+
+	@doc "取消点赞文章"
+	@handler UnlikeArticle
+	delete /articles/:id/like (LikeArticleReq) returns (LikeResult)
 }
 
 // ==================== 分类结构体 ====================
