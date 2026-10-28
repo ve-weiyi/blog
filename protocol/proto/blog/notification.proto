@@ -108,6 +108,7 @@ message CreateNotifyTemplateRequest {
 
 message CreateNotifyTemplateResponse {
   int64 id = 1;
+  NotifyTemplate template = 2;        // 写入后的实体
 }
 
 message UpdateNotifyTemplateRequest {
@@ -122,6 +123,7 @@ message UpdateNotifyTemplateRequest {
 
 message UpdateNotifyTemplateResponse {
   bool success = 1;
+  NotifyTemplate template = 2;        // 写入后的实体
 }
 
 message BatchDeleteNotifyTemplatesRequest {
@@ -168,6 +170,7 @@ message CreateNotifyMessageRequest {
 
 message CreateNotifyMessageResponse {
   int64 id = 1;
+  NotifyMessage message = 2;          // 写入后的实体
 }
 
 message UpdateNotifyMessageRequest {
@@ -182,6 +185,7 @@ message UpdateNotifyMessageRequest {
 
 message UpdateNotifyMessageResponse {
   bool success = 1;
+  NotifyMessage message = 2;          // 写入后的实体
 }
 
 message BatchDeleteNotifyMessagesRequest {

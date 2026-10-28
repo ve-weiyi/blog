@@ -160,6 +160,7 @@ message CreateArticleRequest {
 
 message CreateArticleResponse {
   int64 id = 1;                    // 文章ID
+  Article article = 2;                // 写入后的实体
 }
 
 message UpdateArticleRequest {
@@ -177,6 +178,7 @@ message UpdateArticleRequest {
 
 message UpdateArticleResponse {
   bool success = 1;
+  Article article = 2;                // 写入后的实体
 }
 
 message PatchArticleRequest {
@@ -242,6 +244,7 @@ message CreateCategoryRequest {
 
 message CreateCategoryResponse {
   int64 id = 1;                    // 分类ID
+  Category category = 2;              // 写入后的实体
 }
 
 message UpdateCategoryRequest {
@@ -289,6 +292,7 @@ message CreateTagRequest {
 
 message CreateTagResponse {
   int64 id = 1;                    // 标签ID
+  Tag tag = 2;                        // 写入后的实体
 }
 
 message UpdateTagRequest {

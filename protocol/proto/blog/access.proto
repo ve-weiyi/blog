@@ -97,7 +97,10 @@ message CreateApiRequest {
   int64 status = 6;
   repeated CreateApiRequest children = 10;
 }
-message CreateApiResponse {int64 id = 1;}
+message CreateApiResponse {
+  int64 id = 1;
+  Api api = 2;                        // 写入后的实体
+}
 
 message UpdateApiRequest {
   int64 id = 1;
@@ -108,7 +111,10 @@ message UpdateApiRequest {
   int64 traceable = 6;
   int64 status = 7;
 }
-message UpdateApiResponse {bool success = 1;}
+message UpdateApiResponse {
+  bool success = 1;
+  Api api = 2;                        // 写入后的实体
+}
 
 message BatchDeleteApisRequest {repeated int64 ids = 1;}
 message BatchDeleteApisResponse {int64 success_count = 1;}
@@ -144,7 +150,10 @@ message CreateMenuRequest {
   repeated CreateMenuRequest children = 10;
 }
 
-message CreateMenuResponse {int64 id = 1;}
+message CreateMenuResponse {
+  int64 id = 1;
+  Menu menu = 2;                      // 写入后的实体
+}
 
 message UpdateMenuRequest {
   int64 id = 1;
@@ -155,7 +164,10 @@ message UpdateMenuRequest {
   string redirect = 6;
   MenuMeta meta = 7;
 }
-message UpdateMenuResponse {bool success = 1;}
+message UpdateMenuResponse {
+  bool success = 1;
+  Menu menu = 2;                      // 写入后的实体
+}
 
 message BatchDeleteMenusRequest {repeated int64 ids = 1;}
 message BatchDeleteMenusResponse {int64 success_count = 1;}
@@ -190,7 +202,10 @@ message CreateRoleRequest {
   int64 is_default = 5;
   int64 status = 6;
 }
-message CreateRoleResponse {int64 id = 1;}
+message CreateRoleResponse {
+  int64 id = 1;
+  Role role = 2;                      // 写入后的实体
+}
 
 message UpdateRoleRequest {
   int64 id = 1;
@@ -201,7 +216,10 @@ message UpdateRoleRequest {
   int64 is_default = 6;
   int64 status = 7;
 }
-message UpdateRoleResponse {bool success = 1;}
+message UpdateRoleResponse {
+  bool success = 1;
+  Role role = 2;                      // 写入后的实体
+}
 
 message BatchDeleteRolesRequest {repeated int64 ids = 1;}
 message BatchDeleteRolesResponse {int64 success_count = 1;}

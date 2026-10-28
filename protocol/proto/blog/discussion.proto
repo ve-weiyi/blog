@@ -300,6 +300,7 @@ message CreateTalkRequest {
 
 message CreateTalkResponse {
   int64 id = 1;                    // 说说ID
+  Talk talk = 2;                      // 写入后的实体
 }
 
 message UpdateTalkRequest {
@@ -312,6 +313,7 @@ message UpdateTalkRequest {
 
 message UpdateTalkResponse {
   bool success = 1;
+  Talk talk = 2;                      // 写入后的实体
 }
 
 message BatchDeleteTalksRequest {
