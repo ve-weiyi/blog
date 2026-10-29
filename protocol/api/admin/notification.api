@@ -2,9 +2,9 @@ syntax = "v1"
 
 import "types.api"
 
-// ==================== 统一通知消息管理 ====================
+// ==================== 公告管理 ====================
 type (
-	NotifyMessageVO {
+	AnnouncementVO {
 		Id          int64  `json:"id,optional"`
 		Title       string `json:"title"`
 		Content     string `json:"content"`
@@ -18,14 +18,14 @@ type (
 		CreatedAt   int64  `json:"created_at"`
 		UpdatedAt   int64  `json:"updated_at"`
 	}
-	QueryNotifyMessageListReq {
+	QueryAnnouncementListReq {
 		ListQuery
 		Category   *string `form:"category,optional" json:"category,optional"`
 		Level      *string `form:"level,optional" json:"level,optional"`
 		Status     *string `form:"status,optional" json:"status,optional"`
 		TargetType *string `form:"target_type,optional" json:"target_type,optional"`
 	}
-	CreateNotifyMessageReq {
+	CreateAnnouncementReq {
 		Title      string `json:"title"`
 		Content    string `json:"content"`
 		Category   string `json:"category"`
@@ -33,7 +33,7 @@ type (
 		TargetType string `json:"target_type"`
 		TargetIds  string `json:"target_ids,optional"`
 	}
-	UpdateNotifyMessageReq {
+	UpdateAnnouncementReq {
 		Id         int64  `path:"id"`
 		Title      string `json:"title"`
 		Content    string `json:"content"`
@@ -42,249 +42,278 @@ type (
 		TargetType string `json:"target_type"`
 		TargetIds  string `json:"target_ids,optional"`
 	}
-	DeleteNotifyMessageReq {
-		Ids []int64 `json:"ids"`
-	}
-	GetNotifyMessageReq {
+	GetAnnouncementReq {
 		Id int64 `path:"id"`
 	}
-	PublishNotifyMessageReq {
+	PublishAnnouncementReq {
 		Id int64 `path:"id"`
 	}
-	RevokeNotifyMessageReq {
+	RevokeAnnouncementReq {
 		Id int64 `path:"id"`
 	}
-	QueryUndeliveredNotifyMessagesReq {
+)
+
+@server (
+	tags:       "公告管理"
+	prefix:     /admin-api/v1
+	group:      notification/announcement
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取公告列表"
+	@handler QueryAnnouncementList
+	get /announcements (QueryAnnouncementListReq) returns (ListResult)
+
+	@doc "创建公告"
+	@handler CreateAnnouncement
+	post /announcements (CreateAnnouncementReq) returns (AnnouncementVO)
+
+	@doc "获取公告详情"
+	@handler GetAnnouncement
+	get /announcements/:id (GetAnnouncementReq) returns (AnnouncementVO)
+
+	@doc "更新公告"
+	@handler UpdateAnnouncement
+	put /announcements/:id (UpdateAnnouncementReq) returns (AnnouncementVO)
+
+	@doc "批量删除公告"
+	@handler BatchDeleteAnnouncement
+	post /announcements/batch-delete (IdsReq) returns (BatchResp)
+
+	@doc "发布公告"
+	@handler PublishAnnouncement
+	post /announcements/:id/publish (PublishAnnouncementReq) returns (AnnouncementVO)
+
+	@doc "撤回公告"
+	@handler RevokeAnnouncement
+	post /announcements/:id/revoke (RevokeAnnouncementReq) returns (AnnouncementVO)
+}
+
+// ==================== 投递记录 ====================
+type (
+	DeliveryVO {
+		Id             int64  `json:"id,optional"`
+		NotificationId int64  `json:"notification_id"`
+		Channel        string `json:"channel"`
+		Recipient      string `json:"recipient"`
+		Status         string `json:"status"`
+		TemplateCode   string `json:"template_code"`
+		Content        string `json:"content"`
+		ProviderMsgId  string `json:"provider_msg_id"`
+		ErrorMsg       string `json:"error_msg"`
+		Attempts       int64  `json:"attempts"`
+		NextRetryAt    int64  `json:"next_retry_at"`
+		SentAt         int64  `json:"sent_at"`
+		CreatedAt      int64  `json:"created_at"`
+		UpdatedAt      int64  `json:"updated_at"`
+	}
+	QueryDeliveryListReq {
+		ListQuery
+		Channel        *string `form:"channel,optional" json:"channel,optional"`
+		Status         *string `form:"status,optional" json:"status,optional"`
+		Recipient      *string `form:"recipient,optional" json:"recipient,optional"`
+		NotificationId *int64  `form:"notification_id,optional" json:"notification_id,optional"` // 从收件箱条目下钻
+	}
+	RedeliverDeliveryReq {
+		Id int64 `path:"id"`
+	}
+)
+
+@server (
+	tags:       "投递记录"
+	prefix:     /admin-api/v1
+	group:      notification/delivery
+	authType:   apiKey
+	middleware: AdminAuth,Permission,OperationLog
+)
+service admin-api {
+	@doc "获取外部渠道投递记录"
+	@handler QueryDeliveryList
+	get /notification-deliveries (QueryDeliveryListReq) returns (ListResult)
+
+	@doc "批量删除投递记录"
+	@handler BatchDeleteDelivery
+	post /notification-deliveries/batch-delete (IdsReq) returns (BatchResp)
+
+	@doc "按投递记录重发"
+	@handler RedeliverDelivery
+	post /notification-deliveries/:id/redeliver (RedeliverDeliveryReq) returns (EmptyResp)
+}
+
+// ==================== 通知事件 ====================
+type (
+	NotificationEventVO {
+		Id            int64  `json:"id,optional"`
+		Scene         string `json:"scene"`
+		ActorId       string `json:"actor_id"`
+		ObjectType    string `json:"object_type"`
+		ObjectId      int64  `json:"object_id"`
+		AudienceType  string `json:"audience_type"`
+		AudienceTotal int64  `json:"audience_total"` // 进度分母，扇出开始时确定
+		Status        string `json:"status"`
+		Cursor        int64  `json:"cursor"`
+		CreatedAt     int64  `json:"created_at"`
+		UpdatedAt     int64  `json:"updated_at"`
+	}
+	QueryNotificationEventListReq {
+		ListQuery
+		Status *string `form:"status,optional" json:"status,optional"`
+		Scene  *string `form:"scene,optional" json:"scene,optional"`
+	}
+	QueryStalledEventListReq {
 		BeforeSeconds *int64 `form:"before_seconds,optional" json:"before_seconds,optional"`
 		Limit         *int64 `form:"limit,optional" json:"limit,optional"`
 	}
-	RedeliverNotifyMessageReq {
+	RedeliverEventReq {
 		Id int64 `path:"id"`
 	}
 )
 
 @server (
-	tags:       "通知消息管理"
+	tags:       "通知事件"
 	prefix:     /admin-api/v1
-	group:      notification/notify_message
+	group:      notification/event
 	authType:   apiKey
 	middleware: AdminAuth,Permission,OperationLog
 )
 service admin-api {
-	@doc "获取统一通知消息列表"
-	@handler QueryNotifyMessageList
-	get /notify-messages (QueryNotifyMessageListReq) returns (ListResult)
+	@doc "获取通知事件与扇出进度"
+	@handler QueryNotificationEventList
+	get /notification-events (QueryNotificationEventListReq) returns (ListResult)
 
-	@doc "创建统一通知消息"
-	@handler CreateNotifyMessage
-	post /notify-messages (CreateNotifyMessageReq) returns (NotifyMessageVO)
+	@doc "查询停滞的通知事件"
+	@handler QueryStalledEventList
+	get /notification-events/stalled (QueryStalledEventListReq) returns (ListResult)
 
-	@doc "获取统一通知消息详情"
-	@handler GetNotifyMessage
-	get /notify-messages/:id (GetNotifyMessageReq) returns (NotifyMessageVO)
-
-	@doc "更新统一通知消息"
-	@handler UpdateNotifyMessage
-	put /notify-messages/:id (UpdateNotifyMessageReq) returns (NotifyMessageVO)
-
-	@doc "批量删除统一通知消息"
-	@handler BatchDeleteNotifyMessage
-	post /notify-messages/batch-delete (DeleteNotifyMessageReq) returns (BatchResp)
-
-	@doc "发布统一通知消息"
-	@handler PublishNotifyMessage
-	post /notify-messages/:id/publish (PublishNotifyMessageReq) returns (BatchResp)
-
-	@doc "撤回统一通知消息"
-	@handler RevokeNotifyMessage
-	post /notify-messages/:id/revoke (RevokeNotifyMessageReq) returns (BatchResp)
-
-	@doc "查询已发布但未投递的通知消息"
-	@handler QueryUndeliveredNotifyMessages
-	get /notify-messages/undelivered (QueryUndeliveredNotifyMessagesReq) returns (ListResult)
-
-	@doc "重新投递通知消息"
-	@handler RedeliverNotifyMessage
-	post /notify-messages/:id/redeliver (RedeliverNotifyMessageReq) returns (BatchResp)
+	@doc "重新扇出事件"
+	@handler RedeliverEvent
+	post /notification-events/:id/redeliver (RedeliverEventReq) returns (EmptyResp)
 }
 
-// ==================== 统一投递记录管理 ====================
+// ==================== 用户收件箱（只读） ====================
 type (
-	NotifyRecordVO {
-		Id           int64  `json:"id,optional"`
-		MessageId    int64  `json:"message_id"`
-		Channel      string `json:"channel"`
-		Recipient    string `json:"recipient"`
-		TemplateCode string `json:"template_code"`
-		Content      string `json:"content"`
-		Status       string `json:"status"`
-		BizId        string `json:"biz_id"`
-		ErrorMsg     string `json:"error_msg"`
-		ReadAt       int64  `json:"read_at"`
-		SentAt       int64  `json:"sent_at"`
-		CreatedAt    int64  `json:"created_at"`
-		Title        string `json:"title"`
-		Category     string `json:"category"`
-		Level        string `json:"level"`
+	// 收件人由路径 /users/:user_id 决定，条目里不再重复一份。
+	NotificationItemVO {
+		Id         int64  `json:"id,optional"`
+		EventId    int64  `json:"event_id"`
+		Scene      string `json:"scene"`
+		ActorId    string `json:"actor_id"`
+		ActorName  string `json:"actor_name"`
+		ObjectType string `json:"object_type"`
+		ObjectId   int64  `json:"object_id"`
+		Title      string `json:"title"`
+		Content    string `json:"content"`
+		Link       string `json:"link"`
+		ReadAt     int64  `json:"read_at"`
+		CreatedAt  int64  `json:"created_at"`
 	}
-	QueryUserInboxRecordListReq {
+	QueryUserNotificationListReq {
+		UserId string `path:"user_id"`
 		ListQuery
-		UserId     string  `form:"user_id" json:"user_id"`
-		OnlyUnread *int64  `form:"only_unread,optional" json:"only_unread,optional"`
-		Title      *string `form:"title,optional" json:"title,optional"`
-	}
-	QueryNotifyRecordListReq {
-		ListQuery
-		Channel   *string `form:"channel,optional" json:"channel,optional"`
-		Status    *string `form:"status,optional" json:"status,optional"`
-		Recipient *string `form:"recipient,optional" json:"recipient,optional"`
-	}
-	DeleteNotifyRecordReq {
-		Ids []int64 `json:"ids"`
-	}
-	BatchMarkRecordsReadReq {
-		Ids []int64 `json:"ids"`
-	}
-	MarkAllRecordsReadReq {
-		UserId string `json:"user_id"`
-	}
-	MarkRecordReadReq {
-		Id int64 `path:"id"`
-	}
-	QueryUserInboxRecordListResp {
-		Page        int64       `json:"page"`
-		PageSize    int64       `json:"page_size"`
-		Total       int64       `json:"total"`
-		UnreadTotal int64       `json:"unread_total"`
-		List        interface{} `json:"list"`
 	}
 )
 
+// 只读：管理员不代用户修改已读状态，排障用。
 @server (
-	tags:       "投递记录管理"
+	tags:       "用户收件箱"
 	prefix:     /admin-api/v1
-	group:      notification/notify_record
+	group:      notification/user_notification
 	authType:   apiKey
 	middleware: AdminAuth,Permission,OperationLog
 )
 service admin-api {
-	@doc "查询用户 inbox 投递列表"
-	@handler QueryUserInboxRecordList
-	get /inbox-records (QueryUserInboxRecordListReq) returns (QueryUserInboxRecordListResp)
-
-	@doc "获取统一投递记录列表"
-	@handler QueryNotifyRecordList
-	get /notify-records (QueryNotifyRecordListReq) returns (ListResult)
-
-	@doc "批量删除投递记录"
-	@handler BatchDeleteNotifyRecord
-	post /notify-records/batch-delete (DeleteNotifyRecordReq) returns (BatchResp)
-
-	@doc "批量标记投递记录为已读"
-	@handler BatchMarkRecordsRead
-	post /inbox-records/batch-mark-read (BatchMarkRecordsReadReq) returns (BatchResp)
-
-	@doc "全部标记投递记录为已读"
-	@handler MarkAllRecordsRead
-	post /inbox-records/mark-all-read (MarkAllRecordsReadReq) returns (BatchResp)
-
-	@doc "标记单条投递记录为已读"
-	@handler MarkRecordRead
-	post /inbox-records/:id/mark-read (MarkRecordReadReq) returns (BatchResp)
+	@doc "按用户查看收件箱条目"
+	@handler QueryUserNotificationList
+	get /users/:user_id/notifications (QueryUserNotificationListReq) returns (ListResult)
 }
 
-// ==================== 通知模板管理 ====================
+// ==================== 我的通知 ====================
 type (
-	NotifyTemplateVO {
-		Id        int64  `json:"id,optional"`
-		Code      string `json:"code"`
-		Channel   string `json:"channel"`
-		Scene     string `json:"scene"`
-		Title     string `json:"title"`
-		Content   string `json:"content"`
-		Enabled   int64  `json:"enabled"`
-		CreatedAt int64  `json:"created_at"`
-		UpdatedAt int64  `json:"updated_at"`
+	// NotificationGroupVO 管理端收到的通知，展示单元与读者端一致。
+	// GroupKey 是不透明键，原样回传用于整组已读，不解析、不构造。
+	NotificationGroupVO {
+		GroupKey        string `json:"group_key"` // 不透明键，原样回传用于整组已读 / 删除
+		Scene           string `json:"scene"` // 用于图标与分类，不用于寻址
+		Title           string `json:"title"`
+		Content         string `json:"content"`
+		Link            string `json:"link"` // 跳转地址，客户端只负责打开
+		Level           string `json:"level"`
+		ActorCount      int64  `json:"actor_count"`
+		LatestActorName string `json:"latest_actor_name"`
+		LatestAt        int64  `json:"latest_at"`
+		Unread          bool   `json:"unread"`
 	}
-	QueryNotifyTemplateListReq {
+	QueryMeNotificationListReq {
 		ListQuery
-		Channel *string `form:"channel,optional" json:"channel,optional"`
+		Groups     []string `form:"groups,optional" json:"groups,optional"` // 偏好分组，可多选，缺省为全部
+		UnreadOnly *bool    `form:"unread_only,optional" json:"unread_only,optional"`
 	}
-	CreateNotifyTemplateReq {
-		Code    string `json:"code"`
-		Channel string `json:"channel"`
-		Scene   string `json:"scene"`
-		Title   string `json:"title"`
-		Content string `json:"content"`
-		Enabled int64  `json:"enabled,optional,default=1"`
+	MeUnreadCountReq {
+		Groups []string `form:"groups,optional" json:"groups,optional"` // 偏好分组，可多选，缺省为全部
 	}
-	UpdateNotifyTemplateReq {
-		Id      int64  `path:"id"`
-		Code    string `json:"code"`
-		Channel string `json:"channel"`
-		Scene   string `json:"scene"`
-		Title   string `json:"title"`
-		Content string `json:"content"`
-		Enabled int64  `json:"enabled"`
+	MeUnreadCountResp {
+		Total       int64            `json:"total"`
+		GroupCounts map[string]int64 `json:"group_counts"`
 	}
-	DeleteNotifyTemplateReq {
-		Ids []int64 `json:"ids"`
+	ReadMeNotificationReq {
+		GroupKey string `json:"group_key"` // 列表下发的不透明键
 	}
-	GetNotifyTemplateReq {
-		Id int64 `path:"id"`
+	DeleteMeNotificationReq {
+		GroupKey string `json:"group_key"` // 列表下发的不透明键
 	}
 )
 
+// 收件人一律取自会话主体：路径里没有 user_id，就不存在越权构造的可能。
 @server (
-	tags:       "通知模板管理"
+	tags:       "我的通知"
 	prefix:     /admin-api/v1
-	group:      notification/notify_template
+	group:      notification/me
 	authType:   apiKey
-	middleware: AdminAuth,Permission,OperationLog
+	middleware: AdminAuth
 )
 service admin-api {
-	@doc "获取通知模板列表"
-	@handler QueryNotifyTemplateList
-	get /notify-templates (QueryNotifyTemplateListReq) returns (ListResult)
+	@doc "获取我的通知列表（按分组）"
+	@handler QueryMeNotificationList
+	get /me/notifications (QueryMeNotificationListReq) returns (ListResult)
 
-	@doc "创建通知模板"
-	@handler CreateNotifyTemplate
-	post /notify-templates (CreateNotifyTemplateReq) returns (NotifyTemplateVO)
+	@doc "获取我的未读分组数"
+	@handler GetMeUnreadCount
+	get /me/notifications/unread-count (MeUnreadCountReq) returns (MeUnreadCountResp)
 
-	@doc "获取通知模板详情"
-	@handler GetNotifyTemplate
-	get /notify-templates/:id (GetNotifyTemplateReq) returns (NotifyTemplateVO)
+	@doc "标记我的通知已读"
+	@handler ReadMeNotification
+	post /me/notifications/read (ReadMeNotificationReq) returns (BatchResp)
 
-	@doc "更新通知模板"
-	@handler UpdateNotifyTemplate
-	put /notify-templates/:id (UpdateNotifyTemplateReq) returns (NotifyTemplateVO)
+	@doc "我的通知全部已读"
+	@handler ReadAllMeNotification
+	post /me/notifications/read-all (EmptyReq) returns (BatchResp)
 
-	@doc "批量删除通知模板"
-	@handler BatchDeleteNotifyTemplate
-	post /notify-templates/batch-delete (DeleteNotifyTemplateReq) returns (BatchResp)
+	@doc "删除我的通知"
+	@handler DeleteMeNotification
+	post /me/notifications/delete (DeleteMeNotificationReq) returns (BatchResp)
 }
 
-// ==================== 通知实时推送 ====================
+// ==================== 公告实时推送 ====================
 type (
-	// NotifyStreamEvent 推送帧。事件类型放在 event 字段里（流本身只发 data: 行），
-	// 客户端按 event 值分发后自行回查未读，所以载荷不含收件人。
+	// AnnouncementStreamEvent 推送帧。只推公告状态变化，供多管理员协作时刷新列表；
+	// 读者端的「收件箱变了」是另一条流，两者共用 Redis 与 SSE 基础设施，频道与载荷分开。
 	//
-	// 字段变更需**同步三处**：本文件、infra/notifyx/event.go、
-	// blog-admin/src/composables/sse/sseEvents.ts
-	NotifyStreamEvent {
-		Event       string `json:"event"`
-		MessageId   int64  `json:"message_id,optional"`
-		Title       string `json:"title,optional"`
-		Category    string `json:"category,optional"`
-		Level       string `json:"level,optional"`
-		PublishedAt int64  `json:"published_at,optional"`
+	// 字段变更需同步全部订阅端：本文件、infra/messaging/notifyx、blog-admin 的 SSE 事件定义。
+	AnnouncementStreamEvent {
+		Event          string `json:"event"` // announcement-published | announcement-revoked
+		AnnouncementId int64  `json:"announcement_id,optional"`
+		Title          string `json:"title,optional"`
+		Category       string `json:"category,optional"`
+		Level          string `json:"level,optional"`
+		PublishedAt    int64  `json:"published_at,optional"`
 	}
 )
 
 // sse: true 是组级属性，整组路由都会变成 SSE 流，因此必须单独成组。
 // 组内只挂 AdminAuth：长连接不适合记操作日志，也没有受 RBAC 保护的资源操作。
 @server (
-	tags:       "通知实时推送"
+	tags:       "公告实时推送"
 	prefix:     /admin-api/v1
 	group:      notification/notify_stream
 	authType:   apiKey
@@ -292,8 +321,8 @@ type (
 	sse:        true
 )
 service admin-api {
-	@doc "通知消息推送流（SSE）"
-	@handler NotifyStream
-	get /notify-messages/stream returns (NotifyStreamEvent)
+	@doc "公告状态推送流（SSE）"
+	@handler AnnouncementStream
+	get /announcements/stream returns (AnnouncementStreamEvent)
 }
 

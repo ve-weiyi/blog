@@ -81,49 +81,23 @@ INSERT INTO `t_talk` (`id`, `user_id`, `content`, `images`, `is_top`, `status`, 
 VALUES (1, '1', '博客运行成功！', '', 1, 1, '2024-01-01 00:00:00', '2024-01-01 00:00:00');
 
 -- ----------------------------
--- Records of t_notify_template (示例通知模板)
+-- Records of t_announcement (示例公告)
 -- ----------------------------
-INSERT INTO `t_notify_template` (`id`, `code`, `channel`, `scene`, `title`, `content`, `enabled`, `created_at`, `updated_at`)
-VALUES (1, 'SMS_LOGIN', 'sms', 'login', '登录验证码', '您的验证码是：{code}，有效期 {expire} 分钟。', 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+INSERT INTO `t_announcement` (`id`, `title`, `content`, `category`, `level`, `target_type`, `target_ids`, `status`, `published_at`, `published_by`, `created_at`, `updated_at`)
+VALUES (1, '系统上线公告', 'blog 博客系统正式上线运行！', 'system', 'info', 'all', NULL, 'published', '2026-05-10 16:30:00', 'root', '2026-05-10 16:24:50', '2026-05-10 16:30:00');
 
-INSERT INTO `t_notify_template` (`id`, `code`, `channel`, `scene`, `title`, `content`, `enabled`, `created_at`, `updated_at`)
-VALUES (2, 'EMAIL_REGISTER', 'email', 'register', '注册验证码', '<!DOCTYPE html> <html lang="zh-CN"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>{title}</title> </head> <body style="margin:0;padding:0;background:#f4f6fb;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif;"> <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:32px 16px;"> <tr> <td align="center"> <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(15,23,42,0.08);"> <tr> <td style="background:#4f46e5;background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:28px 32px;color:#ffffff;"> <div style="font-size:20px;font-weight:700;letter-spacing:1px;">博客</div> <div style="margin-top:6px;font-size:13px;opacity:0.85;">安全验证邮件</div> </td> </tr> <tr> <td style="padding:32px;"> <h1 style="margin:0 0 12px;font-size:20px;color:#111827;">{title}</h1> <p style="margin:0 0 24px;font-size:14px;line-height:1.8;color:#4b5563;">{intro}</p> <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;padding:20px;text-align:center;"> <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">你的验证码</div> <div style="font-size:30px;font-weight:700;letter-spacing:8px;color:#4f46e5;font-family:SFMono-Regular,Consolas,monospace;">{code}</div> </div> <p style="margin:20px 0 0;font-size:13px;color:#9ca3af;">验证码 {time} 分钟内有效。若非本人操作，请忽略此邮件。</p> </td> </tr> <tr> <td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #f0f0f5;"> <p style="margin:0;font-size:12px;color:#9ca3af;">此邮件由系统自动发送，请勿直接回复。</p> </td> </tr> </table> </td> </tr> </table> </body> </html>', 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+INSERT INTO `t_announcement` (`id`, `title`, `content`, `category`, `level`, `target_type`, `target_ids`, `status`, `published_at`, `published_by`, `created_at`, `updated_at`)
+VALUES (2, '功能更新预告', '即将推出评论通知和消息推送功能。', 'update', 'warning', 'all', NULL, 'draft', NULL, '', '2026-05-15 10:00:00', '2026-05-15 10:00:00');
 
-INSERT INTO `t_notify_template` (`id`, `code`, `channel`, `scene`, `title`, `content`, `enabled`, `created_at`, `updated_at`)
-VALUES (3, 'INBOX_NOTIFY', 'inbox', 'notify', '系统通知', '{title}\n{content}', 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+INSERT INTO `t_announcement` (`id`, `title`, `content`, `category`, `level`, `target_type`, `target_ids`, `status`, `published_at`, `published_by`, `created_at`, `updated_at`)
+VALUES (3, '紧急维护通知', '6月1日凌晨2:00-4:00服务器维护升级。', 'maintenance', 'error', 'all', NULL, 'published', '2026-05-28 12:00:00', 'root', '2026-05-28 12:00:00', '2026-05-28 12:00:00');
 
--- ----------------------------
--- Records of t_notify_message (示例通知消息)
--- ----------------------------
-INSERT INTO `t_notify_message` (`id`, `title`, `content`, `category`, `level`, `target_type`, `target_ids`, `status`, `published_at`, `published_by`, `created_at`, `updated_at`)
-VALUES (1, '系统上线公告', 'blog 博客系统正式上线运行！', 'system', 'info', 'all', '', 'published', '2026-05-10 16:30:00', 'root', '2026-05-10 16:24:50', '2026-05-10 16:30:00');
+INSERT INTO `t_announcement` (`id`, `title`, `content`, `category`, `level`, `target_type`, `target_ids`, `status`, `published_at`, `published_by`, `created_at`, `updated_at`)
+VALUES (4, '重要提醒', '请尽快完善个人资料信息。', 'remind', 'info', 'user_ids', '["root"]', 'published', '2026-06-01 09:00:00', 'root', '2026-06-01 09:00:00', '2026-06-01 09:00:00');
 
-INSERT INTO `t_notify_message` (`id`, `title`, `content`, `category`, `level`, `target_type`, `target_ids`, `status`, `published_at`, `published_by`, `created_at`, `updated_at`)
-VALUES (2, '功能更新预告', '即将推出评论通知和消息推送功能。', 'update', 'warning', 'all', '', 'draft', NULL, '', '2026-05-15 10:00:00', '2026-05-15 10:00:00');
-
-INSERT INTO `t_notify_message` (`id`, `title`, `content`, `category`, `level`, `target_type`, `target_ids`, `status`, `published_at`, `published_by`, `created_at`, `updated_at`)
-VALUES (3, '紧急维护通知', '6月1日凌晨2:00-4:00服务器维护升级。', 'maintenance', 'error', 'all', '', 'published', '2026-05-28 12:00:00', 'root', '2026-05-28 12:00:00', '2026-05-28 12:00:00');
-
-INSERT INTO `t_notify_message` (`id`, `title`, `content`, `category`, `level`, `target_type`, `target_ids`, `status`, `published_at`, `published_by`, `created_at`, `updated_at`)
-VALUES (4, '重要提醒', '请尽快完善个人资料信息。', 'remind', 'info', 'user_ids', 'root', 'published', '2026-06-01 09:00:00', 'root', '2026-06-01 09:00:00', '2026-06-01 09:00:00');
-
--- ----------------------------
--- Records of t_notify_record (示例投递记录)
--- ----------------------------
-INSERT INTO `t_notify_record` (`id`, `message_id`, `channel`, `recipient`, `template_code`, `content`, `status`, `biz_id`, `error_msg`, `read_at`, `sent_at`, `created_at`)
-VALUES (1, 1, 'inbox', 'root', '', 'blog 博客系统正式上线运行！', 'read', '1:root', '', '2026-05-10 18:00:00', NULL, '2026-05-10 16:30:00');
-
-INSERT INTO `t_notify_record` (`id`, `message_id`, `channel`, `recipient`, `template_code`, `content`, `status`, `biz_id`, `error_msg`, `read_at`, `sent_at`, `created_at`)
-VALUES (2, 3, 'inbox', 'root', '', '6月1日凌晨2:00-4:00服务器维护升级。', 'unread', '3:root', '', NULL, NULL, '2026-05-28 12:00:00');
-
-INSERT INTO `t_notify_record` (`id`, `message_id`, `channel`, `recipient`, `template_code`, `content`, `status`, `biz_id`, `error_msg`, `read_at`, `sent_at`, `created_at`)
-VALUES (3, 3, 'sms', '13800138000', 'SMS_LOGIN', '6月1日凌晨2:00-4:00服务器维护升级。', 'sent', 'sms_biz_001', '', NULL, '2026-05-28 12:00:01', '2026-05-28 12:00:00');
-
-INSERT INTO `t_notify_record` (`id`, `message_id`, `channel`, `recipient`, `template_code`, `content`, `status`, `biz_id`, `error_msg`, `read_at`, `sent_at`, `created_at`)
-VALUES (4, 3, 'email', 'admin@example.com', 'EMAIL_REGISTER', '6月1日凌晨2:00-4:00服务器维护升级。', 'failed', 'email_biz_001', 'mailbox unavailable', NULL, NULL, '2026-05-28 12:00:00');
-
-INSERT INTO `t_notify_record` (`id`, `message_id`, `channel`, `recipient`, `template_code`, `content`, `status`, `biz_id`, `error_msg`, `read_at`, `sent_at`, `created_at`)
-VALUES (5, 4, 'inbox', 'root', '', '请尽快完善个人资料信息。', 'unread', '4:root', '', NULL, NULL, '2026-06-01 09:00:00');
+-- 以上示例公告只用于首页展示：状态为 published，但不预置事件、收件箱条目与投递记录，
+-- 因此不会通知任何人，也无法再走一次发布流程补发。需要真实投递请由管理端新建并发布。
+-- 收件箱条目、通知事件与投递记录一律由发布与业务事件在运行时生成。
 
 
 BEGIN;

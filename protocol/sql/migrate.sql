@@ -72,12 +72,7 @@ VALUES
 (1, 'website_config', '{"admin_url":"https://admin.veweiyi.cn","website_avatar":"","website_author":"","website_create_time":"","website_info":{},"website_intro":"","website_name":"","website_notice":"","website_record_no":"","website_feature":{"is_chat_room":0,"is_comment_review":0,"is_email_notice":0,"is_message_review":0,"is_music_player":0,"is_reward":0},"tourist_avatar":"","user_avatar":"","reward_qr_code":{},"social_login_list":[],"social_url_list":[],"websocket_url":""}', '2024-01-01 00:00:00', '2024-01-01 00:00:00'),
 (2, 'about_me', '{"content":"welcome to my blog!"}', '2024-01-01 00:00:00', '2024-01-01 00:00:00');
 
--- t_notify_template
-INSERT IGNORE INTO `t_notify_template` (`id`, `code`, `channel`, `scene`, `title`, `content`, `enabled`, `created_at`, `updated_at`)
-VALUES
-(1, 'SMS_LOGIN', 'sms', 'login', '登录验证码', '您的验证码是：{code}，有效期 {expire} 分钟。', 1, '2024-01-01 00:00:00', '2024-01-01 00:00:00'),
-(2, 'EMAIL_REGISTER', 'email', 'register', '注册确认', '感谢您注册 {site_name}，请点击链接完成验证：{link}', 1, '2024-01-01 00:00:00', '2024-01-01 00:00:00'),
-(3, 'INBOX_NOTIFY', 'inbox', 'notify', '系统通知', '{title}\n{content}', 1, '2024-01-01 00:00:00', '2024-01-01 00:00:00');
+-- 通知模板已移入代码，不再有种子数据；公告由管理端创建。
 
 -- ============================================
 -- 5. 修正 t_menu.type 的默认值与存量数据

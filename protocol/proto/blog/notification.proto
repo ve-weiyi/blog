@@ -21,124 +21,104 @@ message ListResult {
 }
 
 // ============================================
-// 通知模板
+// 领域实体
 // ============================================
-message NotifyTemplate {
-  int64 id = 1;
-  string code = 2;
-  string channel = 3;
-  string scene = 4;
-  string title = 5;
-  string content = 6;
-  int64 enabled = 7;
-  int64 created_at = 8;
-  int64 updated_at = 9;
-}
 
-// ============================================
-// 统一通知消息（内容）
-// ============================================
-message NotifyMessage {
+// 公告内容：草稿、发布、撤回。正文只存这一份，派生条目只带引用。
+message Announcement {
   int64 id = 1;
   string title = 2;
   string content = 3;
-  string category = 4;
-  string level = 5;
-  string target_type = 6;
-  string target_ids = 7;
-  string status = 8;
+  string category = 4;         // system | maintenance | update | remind
+  string level = 5;            // info | warning | error
+  string target_type = 6;      // all | user_ids
+  string target_ids = 7;       // 目标用户列表（JSON 数组）
+  string status = 8;           // draft | published | revoked
   int64 published_at = 9;
   string published_by = 10;
   int64 created_at = 11;
   int64 updated_at = 12;
 }
 
-// ============================================
-// 统一投递记录（channel: inbox | sms | email）
-// ============================================
-message NotifyRecord {
+// 收件箱分组：读者端的展示单元。
+// group_key 是不透明键，客户端原样回传即可定位整组成员，不解析、不构造。
+message NotificationGroup {
+  string group_key = 1;            // 不透明键，原样回传用于整组已读 / 整组删除
+  string scene = 2;                // 用于图标与本地分类，不用于寻址
+  string title = 3;                // 服务端渲染
+  string content = 4;              // 服务端渲染
+  string link = 5;                 // 跳转地址，客户端只负责打开
+  string level = 6;
+  int64 actor_count = 7;           // 组内人数；仅未读视图下是未读条数
+  string latest_actor_name = 8;
+  int64 latest_at = 9;
+  bool unread = 10;
+}
+
+// 收件箱条目：管理端排障用的条目级视图，含单条已读时间。
+message NotificationItem {
   int64 id = 1;
-  int64 message_id = 2;       // 关联消息内容ID
-  string channel = 3;         // inbox | sms | email
-  string recipient = 4;       // user_id | phone | email
-  string template_code = 5;   // 模板编码
-  string content = 6;         // 实际发送内容
-  string status = 7;          // inbox: unread|read / sms/email: pending|sent|failed
-  string biz_id = 8;          // 业务幂等键
-  string error_msg = 9;       // 失败原因
-  int64 read_at = 10;         // 阅读时间（inbox）
-  int64 sent_at = 11;         // 发送时间（sms/email）
-  int64 created_at = 12;
-  // 来自关联消息的字段
-  string title = 13;
-  string category = 14;
-  string level = 15;
-}
-
-// ============================================
-// NotifyTemplate 请求/响应
-// ============================================
-
-message ListNotifyTemplatesRequest {
-  ListQuery list_query = 1;
-  optional string channel = 2;
-}
-
-message ListNotifyTemplatesResponse {
-  ListResult list_result = 1;
-  repeated NotifyTemplate list = 2;
-}
-
-message GetNotifyTemplateRequest {
-  int64 id = 1;
-}
-
-message GetNotifyTemplateResponse {
-  NotifyTemplate template = 1;
-}
-
-message CreateNotifyTemplateRequest {
-  string code = 1;
-  string channel = 2;
-  string scene = 3;
-  string title = 4;
-  string content = 5;
-  int64 enabled = 6;
-}
-
-message CreateNotifyTemplateResponse {
-  int64 id = 1;
-  NotifyTemplate template = 2;        // 写入后的实体
-}
-
-message UpdateNotifyTemplateRequest {
-  int64 id = 1;
-  string code = 2;
-  string channel = 3;
+  int64 event_id = 2;
+  string recipient_id = 3;
   string scene = 4;
-  string title = 5;
-  string content = 6;
-  int64 enabled = 7;
+  string actor_id = 5;             // 取自事件，条目本身不存
+  string actor_name = 6;
+  string object_type = 7;
+  int64 object_id = 8;
+  string title = 9;
+  string content = 10;
+  string link = 11;
+  int64 read_at = 12;
+  int64 created_at = 13;
 }
 
-message UpdateNotifyTemplateResponse {
-  bool success = 1;
-  NotifyTemplate template = 2;        // 写入后的实体
+// 外部渠道投递记录：每个条目每个渠道一行，保存最近一次尝试与回执。
+message Delivery {
+  int64 id = 1;
+  int64 notification_id = 2;
+  string channel = 3;              // email | sms | push
+  string recipient = 4;            // 邮箱 / 手机号 / 设备端点
+  string status = 5;               // pending | sent | failed | cancelled
+  string template_code = 6;
+  string content = 7;
+  string provider_msg_id = 8;
+  string error_msg = 9;
+  int64 attempts = 10;
+  int64 next_retry_at = 11;
+  int64 sent_at = 12;
+  int64 created_at = 13;
+  int64 updated_at = 14;
 }
 
-message BatchDeleteNotifyTemplatesRequest {
-  repeated int64 ids = 1;          // 模板ID列表
+// 通知事件：扇出的工作单元与载荷唯一副本。
+message NotificationEvent {
+  int64 id = 1;
+  string scene = 2;
+  string actor_id = 3;
+  string object_type = 4;
+  int64 object_id = 5;
+  string audience_type = 6;        // all | user_ids
+  string status = 7;               // pending | fanning | done | failed | terminated
+  int64 audience_total = 8;        // 受众总数，扇出开始时确定，作为进度分母
+  int64 cursor = 9;                // 已处理到的收件人标识
+  int64 created_at = 10;
+  int64 updated_at = 11;
 }
 
-message BatchDeleteNotifyTemplatesResponse {
-  int64 success_count = 1;
+// 偏好开关：分组 × 渠道。没有记录时取场景默认。
+// mandatory 由场景目录决定，只用于回显；更新时传了也会被忽略，否则「安全通知不可退订」可以被客户端绕过。
+message NotificationPreference {
+  string group = 1;
+  string channel = 2;
+  bool enabled = 3;
+  bool mandatory = 4;
 }
 
 // ============================================
-// NotifyMessage 请求/响应
+// 公告
 // ============================================
 
-message ListNotifyMessagesRequest {
+message ListAnnouncementsRequest {
   ListQuery list_query = 1;
   optional string category = 2;
   optional string level = 3;
@@ -146,20 +126,20 @@ message ListNotifyMessagesRequest {
   optional string target_type = 5;
 }
 
-message ListNotifyMessagesResponse {
+message ListAnnouncementsResponse {
   ListResult list_result = 1;
-  repeated NotifyMessage list = 2;
+  repeated Announcement list = 2;
 }
 
-message GetNotifyMessageRequest {
+message GetAnnouncementRequest {
   int64 id = 1;
 }
 
-message GetNotifyMessageResponse {
-  NotifyMessage message = 1;
+message GetAnnouncementResponse {
+  Announcement announcement = 1;
 }
 
-message CreateNotifyMessageRequest {
+message CreateAnnouncementRequest {
   string title = 1;
   string content = 2;
   string category = 3;
@@ -168,12 +148,12 @@ message CreateNotifyMessageRequest {
   string target_ids = 6;
 }
 
-message CreateNotifyMessageResponse {
+message CreateAnnouncementResponse {
   int64 id = 1;
-  NotifyMessage message = 2;          // 写入后的实体
+  Announcement announcement = 2;   // 写入后的实体
 }
 
-message UpdateNotifyMessageRequest {
+message UpdateAnnouncementRequest {
   int64 id = 1;
   string title = 2;
   string content = 3;
@@ -183,121 +163,211 @@ message UpdateNotifyMessageRequest {
   string target_ids = 7;
 }
 
-message UpdateNotifyMessageResponse {
+message UpdateAnnouncementResponse {
   bool success = 1;
-  NotifyMessage message = 2;          // 写入后的实体
+  Announcement announcement = 2;   // 写入后的实体
 }
 
-message BatchDeleteNotifyMessagesRequest {
+message BatchDeleteAnnouncementsRequest {
   repeated int64 ids = 1;
 }
 
-message BatchDeleteNotifyMessagesResponse {
+message BatchDeleteAnnouncementsResponse {
   int64 success_count = 1;
 }
 
-message PublishNotifyMessageRequest {
+message PublishAnnouncementRequest {
   int64 id = 1;
 }
 
-message PublishNotifyMessageResponse {
+message PublishAnnouncementResponse {
   bool success = 1;
+  Announcement announcement = 2;   // 发布后的实体
 }
 
-message RevokeNotifyMessageRequest {
+message RevokeAnnouncementRequest {
   int64 id = 1;
 }
 
-message RevokeNotifyMessageResponse {
+message RevokeAnnouncementResponse {
   bool success = 1;
+  Announcement announcement = 2;   // 撤回后的实体
 }
 
 // ============================================
-// NotifyRecord 请求/响应
+// 通知事件（管理端）
 // ============================================
 
-// 管理端：分页查询投递记录
-message ListNotifyRecordsRequest {
+// 分页查询事件与扇出进度
+message ListNotificationEventsRequest {
   ListQuery list_query = 1;
-  optional string channel = 2;
-  optional string status = 3;
-  optional string recipient = 4;
+  optional string status = 2;
+  optional string scene = 3;
 }
 
-message ListNotifyRecordsResponse {
+message ListNotificationEventsResponse {
   ListResult list_result = 1;
-  repeated NotifyRecord list = 2;
+  repeated NotificationEvent list = 2;
 }
 
-// 管理端：批量删除投递记录
-message BatchDeleteNotifyRecordsRequest {
-  repeated int64 ids = 1;
-}
-
-message BatchDeleteNotifyRecordsResponse {
-  int64 success_count = 1;
-}
-
-// 管理端：查询已发布但尚未生成任何投递记录的消息。
-// 发布与投递之间中断（进程在两步之间退出）的消息不会自动恢复、也不报错，这是它的排查入口。
-message ListUndeliveredNotifyMessagesRequest {
-  int64 before_seconds = 1;    // 只看 published_at 早于 now - before_seconds 的消息，避开仍在投递中的
+// 查询停滞的事件：停在扇出中超过阈值，或已失败。
+// 发布与投递之间中断（进程在两步之间退出）不会自动恢复，也不报错，这是它的排查入口。
+message ListStalledEventsRequest {
+  int64 before_seconds = 1;    // 只看更新时间早于 now - before_seconds 的事件，避开仍在扇出中的
   int64 limit = 2;             // 单次返回上限
 }
 
-message ListUndeliveredNotifyMessagesResponse {
-  repeated NotifyMessage list = 1;
+message ListStalledEventsResponse {
+  repeated NotificationEvent list = 1;
 }
 
-// 管理端：对指定消息重新投递。
-// 幂等——消费者按已有投递记录去重，重复投递不会产生第二条记录。
-message RedeliverNotifyMessageRequest {
+// 重新扇出。只接受失败或停滞的事件：已完成事件重放会让扇出期间新注册的用户收到旧通知，直接拒绝。
+message RedeliverEventRequest {
   int64 id = 1;
 }
 
-message RedeliverNotifyMessageResponse {
+message RedeliverEventResponse {
   bool success = 1;
 }
 
-// 用户端：查询 inbox 投递列表
-message ListUserInboxRecordsRequest {
+// ============================================
+// 投递记录（管理端）
+// ============================================
+
+message ListDeliveriesRequest {
   ListQuery list_query = 1;
-  string user_id = 2;
-  optional int64 only_unread = 3;
-  optional string title = 4;
+  optional string channel = 2;
+  optional string status = 3;
+  optional string recipient = 4;      // 按收件地址反查
+  optional int64 notification_id = 5; // 按条目反查：管理端从收件箱条目点进去看投递结果
 }
 
-message ListUserInboxRecordsResponse {
+message ListDeliveriesResponse {
   ListResult list_result = 1;
-  repeated NotifyRecord list = 2;
-  int64 unread_total = 3;
+  repeated Delivery list = 2;
 }
 
-// 用户端：标记单条 inbox 已读
-message MarkRecordReadRequest {
-  int64 id = 1;
-}
-
-message MarkRecordReadResponse {
-  bool success = 1;
-}
-
-// 用户端：批量标记 inbox 已读
-message BatchMarkRecordsReadRequest {
+message BatchDeleteDeliveriesRequest {
   repeated int64 ids = 1;
 }
 
-message BatchMarkRecordsReadResponse {
+message BatchDeleteDeliveriesResponse {
   int64 success_count = 1;
 }
 
-// 用户端：全部标记 inbox 已读
-message MarkAllRecordsReadRequest {
-  string user_id = 1;
+// 按投递记录重发。幂等：已发送的记录不会被再发一次。
+message RedeliverDeliveryRequest {
+  int64 id = 1;
 }
 
-message MarkAllRecordsReadResponse {
+message RedeliverDeliveryResponse {
+  bool success = 1;
+}
+
+// ============================================
+// 收件箱（读者端）
+// ============================================
+
+message ListNotificationsRequest {
+  ListQuery list_query = 1;
+  repeated string groups = 2;      // 偏好分组集合；为空表示全部
+  optional bool unread_only = 3;
+}
+
+message ListNotificationsResponse {
+  ListResult list_result = 1;
+  repeated NotificationGroup list = 2;
+}
+
+// 未读分组数：返回总量与按偏好分组的分别计数，供角标使用。
+message CountUnreadNotificationsRequest {
+  repeated string groups = 1;      // 为空表示全部
+}
+
+message CountUnreadNotificationsResponse {
+  int64 total = 1;
+  map<string, int64> group_counts = 2;
+}
+
+// 标记已读。只能按分组：列表下发的是 group_key，客户端手里没有条目 id。
+// 收件人一律取自会话主体。
+message MarkNotificationsReadRequest {
+  string group_key = 1;
+}
+
+message MarkNotificationsReadResponse {
   int64 success_count = 1;
+}
+
+message MarkAllNotificationsReadRequest {
+}
+
+message MarkAllNotificationsReadResponse {
+  int64 success_count = 1;
+}
+
+// 删除。只能按分组：列表下发的是 group_key，客户端手里没有条目 id。
+// 收件人一律取自会话主体。
+message DeleteNotificationsRequest {
+  string group_key = 1;
+}
+
+message DeleteNotificationsResponse {
+  int64 success_count = 1;
+}
+
+// ============================================
+// 收件箱（管理端，只读）
+// ============================================
+
+message ListUserNotificationsRequest {
+  ListQuery list_query = 1;
+  string user_id = 2;
+}
+
+message ListUserNotificationsResponse {
+  ListResult list_result = 1;
+  repeated NotificationItem list = 2;
+}
+
+// ============================================
+// 偏好与退订
+// ============================================
+
+message GetNotifyPreferencesRequest {
+}
+
+message GetNotifyPreferencesResponse {
+  repeated NotificationPreference list = 1;
+}
+
+message UpdateNotifyPreferencesRequest {
+  repeated NotificationPreference list = 1;
+}
+
+message UpdateNotifyPreferencesResponse {
+  repeated NotificationPreference list = 1;
+}
+
+// 校验退订令牌：邮件确认页在用户点击之前调用，只回答「会退订什么」，不改变状态。
+message VerifyUnsubscribeRequest {
+  string token = 1;
+}
+
+message VerifyUnsubscribeResponse {
+  string group = 1;
+  string channel = 2;
+}
+
+// 退订：凭签名令牌，不要求登录。强制分组不签发令牌。
+message UnsubscribeRequest {
+  string token = 1;
+}
+
+message UnsubscribeResponse {
+  bool success = 1;
+  string group = 2;
+  string channel = 3;
 }
 
 // ============================================
@@ -311,8 +381,8 @@ message SendMobileCodeRequest {
   int64 expire_seconds = 4;
 }
 
+// 验证码不产生通知记录，因此不回传任何标识
 message SendMobileCodeResponse {
-  int64 id = 1;
 }
 
 message VerifyMobileCodeRequest {
@@ -335,7 +405,6 @@ message SendEmailCodeRequest {
 }
 
 message SendEmailCodeResponse {
-  int64 id = 1;
 }
 
 message VerifyEmailCodeRequest {
@@ -355,57 +424,69 @@ message VerifyEmailCodeResponse {
 // ============================================
 
 service NotificationService {
-  // ==================== 通知模板 ====================
+  // ==================== 公告 ====================
 
-  // 分页查询通知模板列表
-  rpc ListNotifyTemplates(ListNotifyTemplatesRequest) returns (ListNotifyTemplatesResponse);
-  // 查询通知模板详情
-  rpc GetNotifyTemplate(GetNotifyTemplateRequest) returns (GetNotifyTemplateResponse);
-  // 创建通知模板
-  rpc CreateNotifyTemplate(CreateNotifyTemplateRequest) returns (CreateNotifyTemplateResponse);
-  // 更新通知模板
-  rpc UpdateNotifyTemplate(UpdateNotifyTemplateRequest) returns (UpdateNotifyTemplateResponse);
-  // 批量删除通知模板
-  rpc BatchDeleteNotifyTemplates(BatchDeleteNotifyTemplatesRequest) returns (BatchDeleteNotifyTemplatesResponse);
+  // 分页查询公告列表
+  rpc ListAnnouncements(ListAnnouncementsRequest) returns (ListAnnouncementsResponse);
+  // 查询公告详情
+  rpc GetAnnouncement(GetAnnouncementRequest) returns (GetAnnouncementResponse);
+  // 创建公告
+  rpc CreateAnnouncement(CreateAnnouncementRequest) returns (CreateAnnouncementResponse);
+  // 更新公告
+  rpc UpdateAnnouncement(UpdateAnnouncementRequest) returns (UpdateAnnouncementResponse);
+  // 批量删除公告（连同派生条目与投递记录）
+  rpc BatchDeleteAnnouncements(BatchDeleteAnnouncementsRequest) returns (BatchDeleteAnnouncementsResponse);
+  // 发布公告
+  rpc PublishAnnouncement(PublishAnnouncementRequest) returns (PublishAnnouncementResponse);
+  // 撤回公告
+  rpc RevokeAnnouncement(RevokeAnnouncementRequest) returns (RevokeAnnouncementResponse);
 
-  // ==================== 通知消息（内容管理） ====================
+  // ==================== 通知事件（管理端） ====================
 
-  // 分页查询通知消息列表
-  rpc ListNotifyMessages(ListNotifyMessagesRequest) returns (ListNotifyMessagesResponse);
-  // 查询通知消息详情
-  rpc GetNotifyMessage(GetNotifyMessageRequest) returns (GetNotifyMessageResponse);
-  // 创建通知消息
-  rpc CreateNotifyMessage(CreateNotifyMessageRequest) returns (CreateNotifyMessageResponse);
-  // 更新通知消息
-  rpc UpdateNotifyMessage(UpdateNotifyMessageRequest) returns (UpdateNotifyMessageResponse);
-  // 批量删除通知消息
-  rpc BatchDeleteNotifyMessages(BatchDeleteNotifyMessagesRequest) returns (BatchDeleteNotifyMessagesResponse);
-  // 发布通知消息
-  rpc PublishNotifyMessage(PublishNotifyMessageRequest) returns (PublishNotifyMessageResponse);
-  // 撤销通知消息
-  rpc RevokeNotifyMessage(RevokeNotifyMessageRequest) returns (RevokeNotifyMessageResponse);
+  // 分页查询通知事件与扇出进度
+  rpc ListNotificationEvents(ListNotificationEventsRequest) returns (ListNotificationEventsResponse);
+  // 查询停滞的通知事件
+  rpc ListStalledEvents(ListStalledEventsRequest) returns (ListStalledEventsResponse);
+  // 重新扇出事件
+  rpc RedeliverEvent(RedeliverEventRequest) returns (RedeliverEventResponse);
 
   // ==================== 投递记录（管理端） ====================
 
-  // 分页查询投递记录列表
-  rpc ListNotifyRecords(ListNotifyRecordsRequest) returns (ListNotifyRecordsResponse);
+  // 分页查询外部渠道投递记录
+  rpc ListDeliveries(ListDeliveriesRequest) returns (ListDeliveriesResponse);
   // 批量删除投递记录
-  rpc BatchDeleteNotifyRecords(BatchDeleteNotifyRecordsRequest) returns (BatchDeleteNotifyRecordsResponse);
-  // 查询已发布但未生成投递记录的消息
-  rpc ListUndeliveredNotifyMessages(ListUndeliveredNotifyMessagesRequest) returns (ListUndeliveredNotifyMessagesResponse);
-  // 重新投递指定消息
-  rpc RedeliverNotifyMessage(RedeliverNotifyMessageRequest) returns (RedeliverNotifyMessageResponse);
+  rpc BatchDeleteDeliveries(BatchDeleteDeliveriesRequest) returns (BatchDeleteDeliveriesResponse);
+  // 按投递记录重发
+  rpc RedeliverDelivery(RedeliverDeliveryRequest) returns (RedeliverDeliveryResponse);
 
-  // ==================== 投递记录（用户端） ====================
+  // ==================== 收件箱（读者端） ====================
 
-  // 查询用户 inbox 投递列表
-  rpc ListUserInboxRecords(ListUserInboxRecordsRequest) returns (ListUserInboxRecordsResponse);
-  // 标记单条 inbox 已读
-  rpc MarkRecordRead(MarkRecordReadRequest) returns (MarkRecordReadResponse);
-  // 批量标记 inbox 已读
-  rpc BatchMarkRecordsRead(BatchMarkRecordsReadRequest) returns (BatchMarkRecordsReadResponse);
-  // 全部标记 inbox 已读
-  rpc MarkAllRecordsRead(MarkAllRecordsReadRequest) returns (MarkAllRecordsReadResponse);
+  // 分页查询收件箱（按分组）
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+  // 查询未读分组数
+  rpc CountUnreadNotifications(CountUnreadNotificationsRequest) returns (CountUnreadNotificationsResponse);
+  // 标记通知已读
+  rpc MarkNotificationsRead(MarkNotificationsReadRequest) returns (MarkNotificationsReadResponse);
+  // 全部标记已读
+  rpc MarkAllNotificationsRead(MarkAllNotificationsReadRequest) returns (MarkAllNotificationsReadResponse);
+  // 删除通知
+  rpc DeleteNotifications(DeleteNotificationsRequest) returns (DeleteNotificationsResponse);
+
+  // ==================== 收件箱（管理端，只读） ====================
+
+  // 按用户查询收件箱条目
+  rpc ListUserNotifications(ListUserNotificationsRequest) returns (ListUserNotificationsResponse);
+
+  // ==================== 偏好与退订 ====================
+
+  // 查询通知偏好
+  rpc GetNotifyPreferences(GetNotifyPreferencesRequest) returns (GetNotifyPreferencesResponse);
+  // 更新通知偏好
+  rpc UpdateNotifyPreferences(UpdateNotifyPreferencesRequest) returns (UpdateNotifyPreferencesResponse);
+  // 校验退订令牌
+  rpc VerifyUnsubscribe(VerifyUnsubscribeRequest) returns (VerifyUnsubscribeResponse);
+  // 凭令牌执行退订
+  rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
 
   // ==================== 验证码 ====================
 
