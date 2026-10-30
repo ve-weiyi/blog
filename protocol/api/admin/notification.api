@@ -151,6 +151,7 @@ type (
 		ObjectId      int64  `json:"object_id"`
 		AudienceType  string `json:"audience_type"`
 		AudienceTotal int64  `json:"audience_total"` // 进度分母，扇出开始时确定
+		Processed     int64  `json:"processed"` // 已处理收件人数
 		Status        string `json:"status"`
 		Cursor        int64  `json:"cursor"`
 		CreatedAt     int64  `json:"created_at"`

@@ -100,9 +100,10 @@ message NotificationEvent {
   string audience_type = 6;        // all | user_ids
   string status = 7;               // pending | fanning | done | failed | terminated
   int64 audience_total = 8;        // 受众总数，扇出开始时确定，作为进度分母
-  int64 cursor = 9;                // 已处理到的收件人标识
-  int64 created_at = 10;
-  int64 updated_at = 11;
+  int64 processed = 9;             // 已处理收件人数，与受众总数构成进度
+  int64 cursor = 10;               // 已处理到的收件人标识；语义随受众类型而异，只用于续跑
+  int64 created_at = 11;
+  int64 updated_at = 12;
 }
 
 // 偏好开关：分组 × 渠道。没有记录时取场景默认。

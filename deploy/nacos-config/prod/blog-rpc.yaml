@@ -69,3 +69,12 @@ AppOAuthConf:
     client_id: xxx
     client_secret: xxx
     redirect_uri: xxx
+
+# 通知配置。键名须与结构体的 json tag 一致（unsubscribe_secret / site_url）
+NotifyConf:
+  # 退订令牌签名密钥：少于 32 字节按未配置处理 —— 退订链接不签发、退订接口一律拒绝
+  # 生成：openssl rand -base64 48
+  # 真实值只放 Nacos 控制台，不要提交到仓库
+  unsubscribe_secret: CHANGE_ME_RUN_openssl_rand_base64_48
+  # 读者端站点地址，用于拼退订链接（是前端页面域名，不是 API 网关域名）。**必须替换**
+  site_url: CHANGE_ME_READER_SITE_ORIGIN

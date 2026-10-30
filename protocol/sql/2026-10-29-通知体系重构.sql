@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS `t_notification_event` (
   `payload` json DEFAULT NULL COMMENT '渲染载荷；公告事件只存内容引用',
   `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending' COMMENT '状态：pending | fanning | done | failed | terminated',
   `audience_total` bigint NOT NULL DEFAULT '0' COMMENT '受众总数，扇出开始时确定，之后不再变化',
+  `processed` bigint NOT NULL DEFAULT '0' COMMENT '已处理收件人数，与受众总数构成进度',
   `cursor` bigint NOT NULL DEFAULT '0' COMMENT '扇出游标',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
