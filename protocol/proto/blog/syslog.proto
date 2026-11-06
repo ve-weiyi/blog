@@ -31,12 +31,14 @@ message LoginLog {
   int64 id = 1;                    // 日志ID
   string user_id = 2;              // 用户ID
   string device_id = 3;          // 设备ID
-  string login_type = 4;           // 登录类型：password-密码登录 sms-短信登录
+  string login_type = 4;           // 登录类型：password-密码登录 sms-短信登录（登出事件为空）
   int64 status = 5;                // 登录状态：0-失败 1-成功
   string fail_reason = 6;          // 失败原因
-  int64 logout_at = 7;             // 登出时间（时间戳，毫秒）
+  reserved 7;                      // 原 logout_at：登出已改为独立事件行
   int64 created_at = 8;            // 创建时间（时间戳，毫秒）
   int64 updated_at = 9;            // 更新时间（时间戳，毫秒）
+  int64 event_type = 10;           // 事件类型：1-登录 2-登出
+  string logout_type = 11;         // 登出类型（登录事件为空）
 }
 
 // 操作日志（t_operation_log）
@@ -51,7 +53,7 @@ message OperationLog {
   string request_data = 8;         // 请求参数
   string response_data = 9;        // 返回数据
   int64 response_status = 10;      // 响应状态码
-  string cost = 11;                // 耗时（ms）
+  int64 cost = 11;                 // 耗时（毫秒）
   int64 created_at = 12;           // 创建时间（时间戳，毫秒）
   int64 updated_at = 13;           // 更新时间（时间戳，毫秒）
 }
@@ -106,6 +108,8 @@ message CreateLoginLogRequest {
   string login_type = 3;           // 登录类型
   int64 status = 4;                // 登录状态
   optional string fail_reason = 5; // 失败原因
+  int64 event_type = 6;            // 事件类型：1-登录 2-登出
+  string logout_type = 7;          // 登出类型（登录事件为空）
 }
 
 // 创建用户登录日志响应
@@ -153,7 +157,7 @@ message CreateOperationLogRequest {
   string request_data = 7; // 请求参数
   string response_data = 8; // 返回数据
   int64 response_status = 9;       // 响应状态码
-  string cost = 10;       // 耗时（ms）
+  int64 cost = 10;        // 耗时（毫秒）
 }
 
 // 创建操作日志响应

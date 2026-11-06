@@ -1,0 +1,25 @@
+{
+  "suite": "write",
+  "cases": [
+    {
+      "id": "list-articles",
+      "operation": "app:QueryArticleList",
+      "capture": { "article_id": "data.list.0.id" },
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "like-article",
+      "operation": "app:LikeArticle",
+      "auth": true,
+      "path_params": { "id": "{{article_id}}" },
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "unlike-article",
+      "operation": "app:UnlikeArticle",
+      "auth": true,
+      "path_params": { "id": "{{article_id}}" },
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    }
+  ]
+}

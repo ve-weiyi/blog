@@ -74,6 +74,7 @@ message CreatePhotoRequest {
 
 message CreatePhotoResponse {
   int64 id = 1;                    // 照片ID
+  Photo photo = 2;                    // 写入后的实体
 }
 
 message UpdatePhotoRequest {
@@ -139,6 +140,7 @@ message CreateAlbumRequest {
 
 message CreateAlbumResponse {
   int64 id = 1;                    // 相册ID
+  Album album = 2;                    // 写入后的实体
 }
 
 message UpdateAlbumRequest {

@@ -32,6 +32,7 @@ type (
 		Type             int64           `json:"type"`
 		CreatedAt        int64           `json:"created_at"`
 		LikeCount        int64           `json:"like_count"`
+		Liked            bool            `json:"liked"` // 当前用户是否已赞
 		GuestInfo        *GuestInfoVO    `json:"guest_info"`
 		UserInfo         *UserInfoVO     `json:"user_info"`
 		ReplyUserInfo    *UserInfoVO     `json:"reply_user_info"`
@@ -51,6 +52,7 @@ type (
 		Type           int64        `json:"type"`
 		CreatedAt      int64        `json:"created_at"`
 		LikeCount      int64        `json:"like_count"`
+		Liked          bool         `json:"liked"` // 当前用户是否已赞
 		GuestInfo      *GuestInfoVO `json:"guest_info"`
 		UserInfo       *UserInfoVO  `json:"user_info"`
 		ReplyUserInfo  *UserInfoVO  `json:"reply_user_info"`
@@ -121,7 +123,11 @@ service app-api {
 
 	@doc "点赞评论"
 	@handler LikeComment
-	post /comments/:id/like (LikeCommentReq) returns (EmptyResp)
+	post /comments/:id/like (LikeCommentReq) returns (LikeResult)
+
+	@doc "取消点赞评论"
+	@handler UnlikeComment
+	delete /comments/:id/like (LikeCommentReq) returns (LikeResult)
 }
 
 // ==================== 留言模块 ====================
@@ -180,6 +186,7 @@ type (
 		Status       int64       `json:"status"` // 状态 1.公开 2.私密
 		LikeCount    int64       `json:"like_count"` // 点赞量
 		CommentCount int64       `json:"comment_count"` // 评论量
+		Liked        bool        `json:"liked"` // 当前用户是否已赞
 		CreatedAt    int64       `json:"created_at"` // 创建时间
 		UpdatedAt    int64       `json:"updated_at"` // 更新时间
 		UserInfo     *UserInfoVO `json:"user_info"` // 用户信息
@@ -221,6 +228,10 @@ service app-api {
 service app-api {
 	@doc "点赞说说"
 	@handler LikeTalk
-	post /talks/:id/like (LikeTalkReq) returns (EmptyResp)
+	post /talks/:id/like (LikeTalkReq) returns (LikeResult)
+
+	@doc "取消点赞说说"
+	@handler UnlikeTalk
+	delete /talks/:id/like (LikeTalkReq) returns (LikeResult)
 }
 

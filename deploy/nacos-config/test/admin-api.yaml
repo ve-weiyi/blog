@@ -43,7 +43,7 @@ RedisConf:
 
 # 令牌签名密钥，至少 32 字节；部署时注入，不要提交真实值
 TokenConf:
-  secret: ""
+  secret: "${ADMIN_TOKEN_SECRET}"
   access_token_ttl: 2h
   refresh_token_ttl: 168h
 

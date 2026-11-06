@@ -2,10 +2,12 @@ syntax = "v1"
 
 import "types.api"
 import "account.api"
+import "ai.api"
 import "common.api"
 import "content.api"
 import "discussion.api"
 import "media.api"
+import "notification.api"
 import "site.api"
 
 info (

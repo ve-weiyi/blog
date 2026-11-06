@@ -126,3 +126,25 @@ jobs:
       - name: Type check
         working-directory: ${{ matrix.app }}
         run: pnpm type-check
+
+  # E2E 骨架只跑离线部分：解析契约、安全分级与执行器单测。
+  # 真正的端到端需要运行中的网关与数据库，由人工在测试环境执行。
+  e2e-harness:
+    name: E2E / harness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Unit tests
+        run: python3 -m unittest discover -s test/e2e/tests -v
+
+      - name: Contract drift
+        run: python3 test/e2e/run.py --check

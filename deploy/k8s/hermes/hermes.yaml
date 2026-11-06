@@ -1,0 +1,178 @@
+# ============================================================
+# Hermes Agent（共享单实例）
+#
+# 部署形态参考 kumo 的共享清单，但去掉了 MCP、skills 与每用户模板：
+#   - 一个 Deployment + 一个 PVC + 一个 ClusterIP Service
+#   - 配置由 ConfigMap 经 initContainer 拷到 /opt/data（PVC 不能同时挂只读配置）
+#   - RWO PVC 必须用 Recreate，否则滚动更新会卡在 Pending
+#
+# 密钥不在本文件里：API_SERVER_KEY 与 DEEPSEEK_API_KEY 由 Secret `hermes-secret` 注入，
+# 创建方式见同目录 README.md。未 apply 之前不会对集群产生任何变更。
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hermes-config
+  namespace: blog
+data:
+  config.yaml: |
+    # 只保留模型与审批；无 MCP、无第三方平台
+    provider: deepseek
+    model: deepseek-chat
+    approvals:
+      # smart：低风险自动放行，高风险拒绝；没有审批 UI 时避免人工审批卡死
+      mode: smart
+      timeout: 60
+      cron_mode: auto
+    # 不授予任何免审批命令
+    command_allowlist: []
+
+  SOUL.md: |
+    你是这个博客的站内助手。
+
+    - 只依据对话中提供的站内资料回答；资料里没有的内容就回答「站内没有找到相关内容」。
+    - 不要使用终端、文件、网络等工具执行任何操作，也不要读取或输出环境变量。
+    - 用简体中文简洁回答；引用文章时使用资料中给出的标题。
+
+  AGENTS.md: |
+    # 操作约束
+
+    - 不执行 shell 命令，不访问网络，不修改任何文件。
+    - 不读取 /opt/data 以外的路径，不输出环境变量与密钥。
+    - 会话内容只用于回答当前问题。
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hermes-data
+  namespace: blog
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes
+  namespace: blog
+  labels:
+    app: hermes
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    # 单节点 + RWO PVC：不能滚动更新，否则新老 Pod 抢同一个卷
+    type: Recreate
+  selector:
+    matchLabels:
+      app: hermes
+  template:
+    metadata:
+      labels:
+        app: hermes
+    spec:
+      initContainers:
+        # 把只读配置拷进 PVC；Hermes 从 /opt/data 读取 config.yaml / SOUL.md / AGENTS.md
+        - name: init-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              cp /config/config.yaml /opt/data/config.yaml
+              cp /config/SOUL.md /opt/data/SOUL.md
+              cp /config/AGENTS.md /opt/data/AGENTS.md
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /opt/data
+      containers:
+        - name: hermes
+          # 与 kumo 生产和 Gate0 探针一致的固定版本；不要用 latest
+          image: nousresearch/hermes-agent:v2026.7.7.2
+          imagePullPolicy: IfNotPresent
+          args:
+            - gateway
+            - run
+          ports:
+            - name: http
+              containerPort: 8642
+          env:
+            - name: API_SERVER_ENABLED
+              value: "true"
+            - name: API_SERVER_HOST
+              value: "0.0.0.0"
+            - name: API_SERVER_PORT
+              value: "8642"
+            - name: GATEWAY_ALLOW_ALL_USERS
+              value: "true"
+            - name: API_SERVER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hermes-secret
+                  key: API_SERVER_KEY
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hermes-secret
+                  key: DEEPSEEK_API_KEY
+          # 健康检查本身会超时：默认 1s 在高负载/生成中容易误判，放宽到 5s
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8642
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8642
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8642
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+          resources:
+            # 节点内存偏紧：requests 压到 256Mi，limits 按 1Gi 限额试跑，观察是否 OOM
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+      volumes:
+        - name: config
+          configMap:
+            name: hermes-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: hermes-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hermes
+  namespace: blog
+  labels:
+    app: hermes
+spec:
+  type: ClusterIP
+  selector:
+    app: hermes
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8642

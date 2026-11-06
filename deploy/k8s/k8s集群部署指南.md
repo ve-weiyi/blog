@@ -322,6 +322,41 @@ curl -s -o /dev/null -w "HTTP %{http_code} -> %{redirect_url}\n" http://nacos.ve
 > 会直接返回 404 —— 没有 router 就没有地方挂 Middleware。应用尚未部署时 `app` / `admin` 会表现为此，
 > 部署后自愈。
 
+### 流式响应的入口超时
+
+SSE 长连接的截断与 `readTimeout` 无关：`readTimeout` 约束的是**请求**读取；响应写出由 `writeTimeout` 控制，
+keep-alive 空闲才看 `idleTimeout`。Traefik 的 `writeTimeout` 默认不限，本仓库的 SSE 心跳是 15s，
+远小于 `idleTimeout`；go-zero 的 SSE 路由还会把写超时清零（`rest/engine.go` 的 `buildSSERoutes`）。
+通知流长期稳定运行也印证了这一点。
+
+**因此 AI 问答不需要额外的入口超时配置。** 如果实际观察到长连接被断开，先查 `idleTimeout`
+与中间链路（CDN / 负载均衡）的空闲超时，而不是把 `readTimeout` 调大。
+
+### AI 助手上线与回滚
+
+顺序：导入数据库 → 部署 Hermes → 发布 Nacos → 发布镜像 → 打开站点开关。Hermes 的清单与密钥说明见 [`hermes/README.md`](hermes/README.md)。
+
+```bash
+# 1. 表结构（新增会话/消息/分块三张表，不改旧表）
+mysql -h <host> -u <user> -p blog < protocol/sql/2026-11-05-AI助手.sql
+
+# 2. Hermes（密钥在 hermes-secret：API_SERVER_KEY + DEEPSEEK_API_KEY）
+kubectl -n blog apply -f deploy/k8s/hermes/hermes.yaml
+kubectl -n blog rollout status deployment/hermes --timeout=180s
+
+# 3. Nacos 配置（AiConf.base_url 指向 http://hermes:8080/v1）
+bash deploy/nacos-config/publish.sh prod app-api
+
+# 4. 镜像（app-api 的 AI_API_KEY 从 hermes-secret/API_SERVER_KEY 注入）
+kubectl -n blog rollout restart deployment/blog-rpc deployment/app-api
+```
+
+**验证**：后台站点配置里打开「AI 助手」→ 读者端提问，回答应带文章引用；再关闭开关，问答与额度接口应被拒绝，会话历史仍可查看。
+
+**回滚**：先关站点开关（立即止损，无需发版）；模型配置错误时清空 `AiConf.base_url` 或删除 Secret 里的 `AI_API_KEY`；需要退回旧镜像时用 `kubectl rollout undo deployment/app-api -n blog`。
+
+**观察**：app-api 日志只应包含请求标识、模型、用量、耗时与错误码，不应出现问句与文章正文。
+
 ## 七、更新与回滚
 
 ```bash
@@ -385,6 +420,7 @@ kubectl delete -f certs/ --ignore-not-found
 | 根目录的 `*.yaml` | 命名空间、凭据 Secret、kubeconfig —— 逐个用途与 apply 顺序见第四节 |
 | `mysql/` `redis/` `rabbitmq/` `nacos/` `minio/` `etcd/` | 中间件，各含 PVC + Service + StatefulSet |
 | `app/` | 五个应用 + `nacos-config` ConfigMap |
+| `hermes/` | AI 助手的共享 Hermes 实例：Deployment + PVC + ClusterIP Service |
 | `ingress/` | 域名路由：Ingress + 重定向 Middleware |
 | `certs/` | 证书签发：ClusterIssuer + Certificate |
 
@@ -395,9 +431,11 @@ kubectl delete -f certs/ --ignore-not-found
 - **默认口令未改**。`env.yaml` 中 MySQL / Redis / RabbitMQ / MinIO 的密码为初值；
   `protocol/sql/blog-data.sql` 的种子账号是 `root` / `root`；Nacos 控制台是默认的 `nacos` / `nacos`。
   配合「安全组只放行四个端口」可降低风险，但**首次部署后仍应改掉**。
-- **SSE 长连接超时未调**。原 nginx 清单里的 `proxy-read-timeout: "600"` 随注解一并失效。
-  Traefik 默认 `readTimeout=0`（不限）、`idleTimeout=180s`：SSE 若有短于 180s 的心跳则不受影响，
-  若发现长连接被断，需在 kube-system 的 Traefik 配置里调 `idleTimeout`。
+- **SSE 长连接超时**：响应写出由 `writeTimeout` 控制（默认不限），请求读取的 `readTimeout` 不影响正在生成的回答；
+  心跳 15s 远小于 keep-alive 的 `idleTimeout`。若观察到长连接被断，先查 `idleTimeout` 与链路中间的空闲超时。
+- **Hermes 终端未沙箱**：共享实例的 API Server 绑定 0.0.0.0，Agent 的 `terminal.backend` 是 `local`，
+  拿到 `API_SERVER_KEY` 就能让它在容器内执行命令。当前靠人设、AGENTS.md 与 `approvals: smart` 约束，
+  公网开放前应加沙箱或限制出站，并只让 app-api 持有该 Key。
 
 ### 其他注意事项
 

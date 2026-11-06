@@ -3,6 +3,11 @@ syntax = "v1"
 type (
 	EmptyReq  {}
 	EmptyResp  {}
+	// 点赞结果：liked 为操作后的状态，changed 表示本次调用是否真的改变了状态
+	LikeResult {
+		Liked   bool `json:"liked"`
+		Changed bool `json:"changed"`
+	}
 )
 
 type (

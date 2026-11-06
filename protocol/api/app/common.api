@@ -61,6 +61,6 @@ service app-api {
 service app-api {
 	@doc "WebSocket消息"
 	@handler Websocket
-	get /ws
+	get /websocket
 }
 

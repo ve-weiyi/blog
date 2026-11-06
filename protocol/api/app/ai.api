@@ -1,0 +1,141 @@
+syntax = "v1"
+
+import "types.api"
+
+// ==================== 类型定义 ====================
+type (
+	// AiChatMessage 一条对话消息，既用于请求携带历史，也用于前端渲染。
+	AiChatMessage {
+		Role    string `json:"role"` // user / assistant
+		Content string `json:"content"`
+	}
+	// AiChatStreamReq 一轮问答请求。
+	// 登录用户传 session_id 续聊；游客不传，改为携带最近若干轮 history。
+	AiChatStreamReq {
+		SessionId int64           `json:"session_id,optional"` // 会话ID，登录用户续聊时传入
+		Message   string          `json:"message"` // 本轮问题
+		History   []AiChatMessage `json:"history,optional"` // 游客携带的历史，服务端会再次裁剪
+	}
+	AiUsage {
+		PromptTokens     int64 `json:"prompt_tokens"`
+		CompletionTokens int64 `json:"completion_tokens"`
+	}
+	AiCitation {
+		ArticleId int64  `json:"article_id"`
+		Title     string `json:"title"`
+		Url       string `json:"url"` // 由网关按站点地址与文章路由拼装
+		Summary   string `json:"summary,omitempty"` // 片段摘要，用于引用卡片
+	}
+	AiToolEvent {
+		Name     string        `json:"name"` // 工具名，P0 只有 search_articles
+		Phase    string        `json:"phase"` // started / completed / failed
+		Label    string        `json:"label,omitempty"` // 展示文案
+		Summary  string        `json:"summary,omitempty"` // 结果摘要
+		Articles []*AiCitation `json:"articles,omitempty"` // 引用列表，完成事件下发
+	}
+	// AiStreamEvent 问答流的事件；心跳是注释帧，不产生该结构。
+	AiStreamEvent {
+		Type      string       `json:"type"` // meta / tool / delta / done / error
+		SessionId int64        `json:"session_id"` // 游客为 0
+		Guest     bool         `json:"guest"`
+		QuotaLeft int64        `json:"quota_left"` // 剩余额度，-1 表示不限
+		Content   string       `json:"content,omitempty"`
+		Tool      *AiToolEvent `json:"tool,omitempty"`
+		Usage     *AiUsage     `json:"usage,omitempty"`
+		Code      string       `json:"code,omitempty"`
+		Message   string       `json:"message,omitempty"`
+	}
+	AiQuotaResp {
+		DailyQuota int64 `json:"daily_quota"` // 当日额度，0 表示不限
+		Used       int64 `json:"used"` // 已用
+		Remaining  int64 `json:"remaining"` // 剩余，-1 表示不限
+	}
+	AiSessionVO {
+		Id            int64  `json:"id"`
+		Title         string `json:"title"`
+		Model         string `json:"model"`
+		MessageCount  int64  `json:"message_count"`
+		CreatedAt     int64  `json:"created_at"`
+		UpdatedAt     int64  `json:"updated_at"`
+		LastMessageAt int64  `json:"last_message_at"`
+	}
+	AiMessageVO {
+		Id        int64  `json:"id"`
+		SessionId int64  `json:"session_id"`
+		Role      string `json:"role"`
+		Content   string `json:"content"`
+		CreatedAt int64  `json:"created_at"`
+	}
+	AiMessageListResp {
+		List []*AiMessageVO `json:"list"`
+	}
+	AiSessionDeleteResp {
+		SuccessCount int64 `json:"success_count"`
+	}
+)
+
+type (
+	QueryAiSessionListReq {
+		ListQuery
+	}
+	QueryAiMessageListReq {
+		SessionId int64 `path:"session_id"`
+		After     int64 `form:"after,optional"` // 只取该时间之后的消息（毫秒）
+		Limit     int64 `form:"limit,optional"` // 数量上限
+	}
+	DeleteAiSessionReq {
+		SessionId int64 `path:"session_id"`
+	}
+)
+
+// ==================== 问答流 ====================
+// sse: true 是组级属性，整组路由都会变成 SSE 流，因此必须单独成组。
+@server (
+	tags:       "AI 助手"
+	prefix:     /api/v1
+	group:      ai/chat_stream
+	middleware: AiSwitch,OptionalUserAuth,AiRateLimit
+	timeout:    5m
+	sse:        true
+)
+service app-api {
+	@doc "AI 助手问答流（SSE）"
+	@handler AiChatStream
+	post /ai/chat/stream (AiChatStreamReq) returns (AiStreamEvent)
+}
+
+// ==================== 额度 ====================
+@server (
+	tags:       "AI 助手"
+	prefix:     /api/v1
+	group:      ai/quota
+	middleware: AiSwitch,OptionalUserAuth
+)
+service app-api {
+	@doc "查询今日剩余额度"
+	@handler GetAiQuota
+	get /ai/quota returns (AiQuotaResp)
+}
+
+// ==================== 会话 ====================
+// 会话接口不调用模型，只校验登录与归属，不随站点开关关闭。
+@server (
+	tags:       "AI 助手"
+	prefix:     /api/v1
+	group:      ai/session
+	middleware: UserAuth
+)
+service app-api {
+	@doc "分页查询我的会话"
+	@handler QueryAiSessionList
+	get /ai/sessions (QueryAiSessionListReq) returns (ListResult)
+
+	@doc "查询会话消息"
+	@handler QueryAiMessageList
+	get /ai/sessions/:session_id/messages (QueryAiMessageListReq) returns (AiMessageListResp)
+
+	@doc "删除会话"
+	@handler DeleteAiSession
+	delete /ai/sessions/:session_id (DeleteAiSessionReq) returns (AiSessionDeleteResp)
+}
+

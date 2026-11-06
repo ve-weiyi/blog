@@ -66,6 +66,11 @@ coverage.out
 
 *.db
 
+# Python（E2E 骨架）
+__pycache__/
+*.pyc
+test/e2e/results/
+
 *.jpg
 *.bmp
 *.jpeg

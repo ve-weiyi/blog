@@ -30,10 +30,14 @@ spec:
             - configMapRef:
                 name: nacos-config
           env:
-            # 绕过 protobuf 全局注册冲突：etcd 客户端库与项目自身都有 auth.proto。
-            # 该变量不在 protobuf 的兼容性承诺内，属已知技术债（根治办法是重命名 auth.proto）。
-            - name: GOLANG_PROTOBUF_REGISTRATION_CONFLICT
-              value: warn
+            # AI 后端密钥：AiConf.base_url 指向 Hermes 时，这里放 Hermes 的 API_SERVER_KEY；
+            # 直连 DeepSeek 时改为 DeepSeek 密钥。Secret 缺失时助手不可用，其他功能不受影响。
+            - name: AI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hermes-secret
+                  key: API_SERVER_KEY
+                  optional: true
           command: ["./server"]
           args:
             - "-nacos-host=$(NACOS_HOST)"

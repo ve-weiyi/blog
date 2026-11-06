@@ -80,6 +80,6 @@ service admin-api {
 service admin-api {
 	@doc "WebSocket消息"
 	@handler Websocket
-	get /ws
+	get /websocket
 }
 

@@ -73,7 +73,7 @@ ids := make([]int64, 0, len(items))
 for _, item := range items {
     ids = append(ids, item.ID)
 }
-records, _ := model.FindALL(ctx, "id IN ?", ids)
+records, _ := model.FindAll(ctx, "id IN ?", ids)
 recordMap := make(map[int64]*Model, len(records))
 for _, r := range records {
     recordMap[r.Id] = r
@@ -86,7 +86,7 @@ for _, item := range items {
 ### GORM 规范
 
 - `IN` 子句：直接传切片，GORM 自动展开
-- 批量查询命名：`FindALL`
+- 批量查询命名：`FindAll`
 - 单个查询命名：`FindOne`
 - 禁止字符串拼接 SQL，使用参数化查询
 

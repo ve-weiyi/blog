@@ -1,0 +1,128 @@
+syntax = "proto3";
+
+package blog.ai.v1;
+
+option go_package = "./airpc";
+
+// ============================================
+// 通用消息定义
+// ============================================
+
+message ListResult {
+  int64 page = 1;                  // 当前页码
+  int64 page_size = 2;             // 每页数量
+  int64 total = 3;                 // 总数
+}
+
+// ============================================
+// 核心数据模型
+// ============================================
+
+// AI 会话
+message Session {
+  int64 id = 1;                    // 主键
+  string user_id = 2;              // 所属用户
+  string title = 3;                // 标题（首个问题的截断文本）
+  string model = 4;                // 生成该会话的模型
+  int64 message_count = 5;         // 消息条数
+  int64 created_at = 6;            // 创建时间（时间戳，毫秒）
+  int64 updated_at = 7;            // 更新时间（时间戳，毫秒）
+  int64 last_message_at = 8;       // 最近一条消息时间（时间戳，毫秒）
+}
+
+// AI 会话内消息
+message Message {
+  int64 id = 1;                    // 主键
+  int64 session_id = 2;            // 所属会话
+  string role = 3;                 // 角色：user / assistant
+  string content = 4;              // 正文
+  int64 prompt_tokens = 5;         // 提示词 token 数（仅助手消息）
+  int64 completion_tokens = 6;     // 生成 token 数（仅助手消息）
+  int64 created_at = 7;            // 创建时间（时间戳，毫秒）
+}
+
+// ============================================
+// 会话管理
+// ============================================
+
+// 创建会话（归属用户取自请求上下文）
+message CreateSessionRequest {
+  string title = 1;                // 标题，空时由调用方用首个问题截断填充
+  string model = 2;                // 模型标识
+}
+
+message CreateSessionResponse {
+  Session session = 1;
+}
+
+// 分页查询会话列表（归属用户取自请求上下文）
+message ListSessionsRequest {
+  int64 page = 1;                  // 页码，缺省 1
+  int64 page_size = 2;             // 每页数量，缺省 20
+}
+
+message ListSessionsResponse {
+  ListResult list_result = 1;
+  repeated Session list = 2;
+}
+
+// 查询会话详情（校验归属）
+message GetSessionRequest {
+  int64 id = 1;
+}
+
+message GetSessionResponse {
+  Session session = 1;
+}
+
+// 查询会话消息（校验归属）
+message ListMessagesRequest {
+  int64 session_id = 1;
+  int64 after = 2;                 // 只取该时间之后的消息（时间戳，毫秒），0 表示不限
+  int64 limit = 3;                 // 数量上限，缺省 50
+}
+
+message ListMessagesResponse {
+  repeated Message list = 1;
+}
+
+// 追加消息（校验归属）
+message AppendMessageRequest {
+  int64 session_id = 1;
+  string role = 2;                 // user / assistant
+  string content = 3;
+  int64 prompt_tokens = 4;         // 仅助手消息
+  int64 completion_tokens = 5;     // 仅助手消息
+}
+
+message AppendMessageResponse {
+  Message message = 1;
+}
+
+// 删除会话及其消息（校验归属）
+message DeleteSessionRequest {
+  int64 id = 1;
+}
+
+message DeleteSessionResponse {
+  int64 success_count = 1;
+}
+
+// ============================================
+// 服务定义
+// ============================================
+
+service AiService {
+  // 创建会话
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+  // 分页查询会话列表
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
+  // 查询会话详情
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+  // 查询会话消息
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
+  // 追加消息
+  rpc AppendMessage(AppendMessageRequest) returns (AppendMessageResponse);
+  // 删除会话
+  rpc DeleteSession(DeleteSessionRequest) returns (DeleteSessionResponse);
+}

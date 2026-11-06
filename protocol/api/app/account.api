@@ -270,14 +270,6 @@ type (
 	ReactivateAccountResp {
 		Success bool `json:"success"` // 是否恢复成功
 	}
-	// 获取用户点赞集合请求
-	GetMeLikeReq  {}
-	// 获取用户点赞集合响应
-	GetMeLikeResp {
-		ArticleLikeSet []int64 `json:"article_like_set"` // 文章点赞集合
-		CommentLikeSet []int64 `json:"comment_like_set"` // 评论点赞集合
-		TalkLikeSet    []int64 `json:"talk_like_set"` // 说说点赞集合
-	}
 )
 
 @server (
@@ -311,10 +303,6 @@ service app-api {
 	@doc "解绑第三方平台账号"
 	@handler UnbindMeThirdParty
 	post /me/unbind-third-party (UnbindMeThirdPartyReq) returns (EmptyResp)
-
-	@doc "获取用户点赞集合"
-	@handler GetMeLike
-	get /me/likes (GetMeLikeReq) returns (GetMeLikeResp)
 
 	@doc "停用账号（进入冷静期）"
 	@handler DeactivateAccount

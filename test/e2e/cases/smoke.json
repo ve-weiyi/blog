@@ -1,0 +1,52 @@
+{
+  "suite": "smoke",
+  "cases": [
+    {
+      "id": "ping",
+      "operation": "app:Ping",
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "home",
+      "operation": "app:GetBlogHomeInfo",
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "articles",
+      "operation": "app:QueryArticleList",
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "categories",
+      "operation": "app:QueryCategoryList",
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "tags",
+      "operation": "app:QueryTagList",
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "comments",
+      "operation": "app:QueryCommentList",
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "pages",
+      "operation": "app:QueryPageList",
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "me",
+      "operation": "app:GetMe",
+      "auth": true,
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    },
+    {
+      "id": "unread-count",
+      "operation": "app:GetUnreadCount",
+      "auth": true,
+      "expect": { "status": 200, "code": "SUCCESS", "data_type": "object" }
+    }
+  ]
+}

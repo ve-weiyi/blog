@@ -1,0 +1,161 @@
+syntax = "v1"
+
+import "types.api"
+
+// ==================== 收件箱 ====================
+type (
+	// NotificationGroupVO 收件箱里的一个展示单元。
+	// GroupKey 是不透明键，原样回传用于整组已读 / 整组删除，不解析、不构造。
+	NotificationGroupVO {
+		GroupKey        string `json:"group_key"` // 不透明键，原样回传用于整组已读 / 删除
+		Scene           string `json:"scene"` // 用于图标与分类，不用于寻址
+		Title           string `json:"title"`
+		Content         string `json:"content"`
+		Link            string `json:"link"` // 跳转地址，客户端只负责打开
+		Level           string `json:"level"`
+		ActorCount      int64  `json:"actor_count"`
+		LatestActorName string `json:"latest_actor_name"`
+		LatestAt        int64  `json:"latest_at"`
+		Unread          bool   `json:"unread"`
+	}
+	QueryNotificationListReq {
+		ListQuery
+		Groups     []string `form:"groups,optional" json:"groups,optional"` // 偏好分组，可多选，缺省为全部
+		UnreadOnly *bool    `form:"unread_only,optional" json:"unread_only,optional"`
+	}
+	UnreadCountReq {
+		Groups []string `form:"groups,optional" json:"groups,optional"` // 偏好分组，可多选，缺省为全部
+	}
+	UnreadCountResp {
+		Total       int64            `json:"total"`
+		GroupCounts map[string]int64 `json:"group_counts"`
+	}
+	ReadNotificationReq {
+		GroupKey string `json:"group_key"` // 列表下发的不透明键
+	}
+	DeleteNotificationReq {
+		GroupKey string `json:"group_key"` // 列表下发的不透明键
+	}
+	AffectedResp {
+		SuccessCount int64 `json:"success_count"`
+	}
+)
+
+@server (
+	tags:       "通知"
+	prefix:     /api/v1
+	group:      notification/notify
+	authType:   apiKey
+	middleware: UserAuth
+)
+service app-api {
+	@doc "获取通知列表（按分组分页）"
+	@handler QueryNotificationList
+	get /notifications (QueryNotificationListReq) returns (ListResult)
+
+	@doc "获取未读分组数"
+	@handler GetUnreadCount
+	get /notifications/unread-count (UnreadCountReq) returns (UnreadCountResp)
+
+	@doc "标记通知已读"
+	@handler ReadNotification
+	post /notifications/read (ReadNotificationReq) returns (AffectedResp)
+
+	@doc "全部标记已读"
+	@handler ReadAllNotification
+	post /notifications/read-all (EmptyReq) returns (AffectedResp)
+
+	@doc "删除通知"
+	@handler DeleteNotification
+	post /notifications/delete (DeleteNotificationReq) returns (AffectedResp)
+}
+
+// ==================== 偏好 ====================
+type (
+	NotificationPreferenceVO {
+		Group     string `json:"group"`
+		Channel   string `json:"channel"`
+		Enabled   bool   `json:"enabled"`
+		Mandatory bool   `json:"mandatory"` // 为真表示该分组不可退订
+	}
+	UpdateNotifyPreferenceReq {
+		List []NotificationPreferenceVO `json:"list"`
+	}
+	NotifyPreferenceListResp {
+		List []NotificationPreferenceVO `json:"list"`
+	}
+)
+
+@server (
+	tags:       "通知偏好"
+	prefix:     /api/v1
+	group:      notification/preference
+	authType:   apiKey
+	middleware: UserAuth
+)
+service app-api {
+	@doc "获取通知偏好"
+	@handler GetNotifyPreference
+	get /notifications/preferences (EmptyReq) returns (NotifyPreferenceListResp)
+
+	@doc "更新通知偏好"
+	@handler UpdateNotifyPreference
+	put /notifications/preferences (UpdateNotifyPreferenceReq) returns (NotifyPreferenceListResp)
+}
+
+// ==================== 退订（免登录） ====================
+type (
+	UnsubscribeVerifyReq {
+		Token string `form:"token" json:"token"`
+	}
+	UnsubscribeVerifyResp {
+		Group   string `json:"group"`
+		Channel string `json:"channel"`
+	}
+	UnsubscribeReq {
+		Token string `json:"token"`
+	}
+)
+
+// 邮件里的链接指向博客站确认页，确认页调用这两个接口。
+// 必须先校验再执行：邮件安全扫描器会预取链接，GET 直接落地成退订会被误触。
+@server (
+	tags:     "邮件退订"
+	prefix:   /api/v1
+	group:    notification/unsubscribe
+	authType: apiKey
+)
+service app-api {
+	@doc "校验退订令牌"
+	@handler VerifyUnsubscribe
+	get /notifications/unsubscribe (UnsubscribeVerifyReq) returns (UnsubscribeVerifyResp)
+
+	@doc "执行退订"
+	@handler Unsubscribe
+	post /notifications/unsubscribe (UnsubscribeReq) returns (EmptyResp)
+}
+
+// ==================== 实时信号 ====================
+type (
+	// NotificationStreamEvent 推送帧：只声明收件箱变了，客户端据此回查列表与未读数。
+	// 载荷不含正文，也不含收件人——连接本身已经绑定到登录用户。
+	NotificationStreamEvent {
+		Event string `json:"event"` // notify
+	}
+)
+
+// sse: true 是组级属性，整组路由都会变成 SSE 流，因此必须单独成组。
+@server (
+	tags:       "通知实时推送"
+	prefix:     /api/v1
+	group:      notification/notify_stream
+	authType:   apiKey
+	middleware: UserAuth,NotifyStreamLimit
+	sse:        true
+)
+service app-api {
+	@doc "通知实时推送流（SSE）"
+	@handler NotificationStream
+	get /notifications/stream returns (NotificationStreamEvent)
+}
+

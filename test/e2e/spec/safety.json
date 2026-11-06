@@ -1,0 +1,12 @@
+{
+  "rules": [
+    { "match": "app:PasswordLogin", "level": "normal" },
+    { "match": "app:Ping", "level": "normal" },
+    { "match": "app:Get*", "level": "normal" },
+    { "match": "app:Query*", "level": "normal" },
+    { "match": "app:LikeArticle", "level": "heavy" },
+    { "match": "app:UnlikeArticle", "level": "heavy" },
+    { "match": "app:*", "level": "unimplemented" },
+    { "match": "admin:*", "level": "unimplemented" }
+  ]
+}

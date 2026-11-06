@@ -1,0 +1,1878 @@
+{
+  "generated_from": "protocol/api",
+  "count": 208,
+  "operations": {
+    "admin:AnnouncementStream": {
+      "operation": "admin:AnnouncementStream",
+      "handler": "AnnouncementStream",
+      "method": "GET",
+      "path": "/admin-api/v1/announcements/stream",
+      "doc": "公告状态推送流（SSE）",
+      "file": "protocol/api/admin/notification.api",
+      "line": 327
+    },
+    "admin:BatchDeleteAlbum": {
+      "operation": "admin:BatchDeleteAlbum",
+      "handler": "BatchDeleteAlbum",
+      "method": "POST",
+      "path": "/admin-api/v1/albums/batch-delete",
+      "doc": "批量删除相册（移入回收站）",
+      "file": "protocol/api/admin/media.api",
+      "line": 76
+    },
+    "admin:BatchDeleteAnnouncement": {
+      "operation": "admin:BatchDeleteAnnouncement",
+      "handler": "BatchDeleteAnnouncement",
+      "method": "POST",
+      "path": "/admin-api/v1/announcements/batch-delete",
+      "doc": "批量删除公告",
+      "file": "protocol/api/admin/notification.api",
+      "line": 82
+    },
+    "admin:BatchDeleteApi": {
+      "operation": "admin:BatchDeleteApi",
+      "handler": "BatchDeleteApi",
+      "method": "POST",
+      "path": "/admin-api/v1/apis/batch-delete",
+      "doc": "批量删除接口",
+      "file": "protocol/api/admin/access.api",
+      "line": 85
+    },
+    "admin:BatchDeleteCategory": {
+      "operation": "admin:BatchDeleteCategory",
+      "handler": "BatchDeleteCategory",
+      "method": "POST",
+      "path": "/admin-api/v1/categories/batch-delete",
+      "doc": "批量删除分类",
+      "file": "protocol/api/admin/content.api",
+      "line": 161
+    },
+    "admin:BatchDeleteComment": {
+      "operation": "admin:BatchDeleteComment",
+      "handler": "BatchDeleteComment",
+      "method": "POST",
+      "path": "/admin-api/v1/comments/batch-delete",
+      "doc": "批量删除评论",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 74
+    },
+    "admin:BatchDeleteDelivery": {
+      "operation": "admin:BatchDeleteDelivery",
+      "handler": "BatchDeleteDelivery",
+      "method": "POST",
+      "path": "/admin-api/v1/notification-deliveries/batch-delete",
+      "doc": "批量删除投递记录",
+      "file": "protocol/api/admin/notification.api",
+      "line": 137
+    },
+    "admin:BatchDeleteFriend": {
+      "operation": "admin:BatchDeleteFriend",
+      "handler": "BatchDeleteFriend",
+      "method": "POST",
+      "path": "/admin-api/v1/friends/batch-delete",
+      "doc": "批量删除友链",
+      "file": "protocol/api/admin/site.api",
+      "line": 196
+    },
+    "admin:BatchDeleteLoginLog": {
+      "operation": "admin:BatchDeleteLoginLog",
+      "handler": "BatchDeleteLoginLog",
+      "method": "POST",
+      "path": "/admin-api/v1/login-logs/batch-delete",
+      "doc": "批量删除登录日志",
+      "file": "protocol/api/admin/syslog.api",
+      "line": 46
+    },
+    "admin:BatchDeleteMenu": {
+      "operation": "admin:BatchDeleteMenu",
+      "handler": "BatchDeleteMenu",
+      "method": "POST",
+      "path": "/admin-api/v1/menus/batch-delete",
+      "doc": "批量删除菜单",
+      "file": "protocol/api/admin/access.api",
+      "line": 196
+    },
+    "admin:BatchDeleteMessage": {
+      "operation": "admin:BatchDeleteMessage",
+      "handler": "BatchDeleteMessage",
+      "method": "POST",
+      "path": "/admin-api/v1/messages/batch-delete",
+      "doc": "批量删除留言",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 122
+    },
+    "admin:BatchDeleteOperationLog": {
+      "operation": "admin:BatchDeleteOperationLog",
+      "handler": "BatchDeleteOperationLog",
+      "method": "POST",
+      "path": "/admin-api/v1/operation-logs/batch-delete",
+      "doc": "批量删除操作日志",
+      "file": "protocol/api/admin/syslog.api",
+      "line": 94
+    },
+    "admin:BatchDeletePage": {
+      "operation": "admin:BatchDeletePage",
+      "handler": "BatchDeletePage",
+      "method": "POST",
+      "path": "/admin-api/v1/pages/batch-delete",
+      "doc": "批量删除页面",
+      "file": "protocol/api/admin/site.api",
+      "line": 138
+    },
+    "admin:BatchDeletePhoto": {
+      "operation": "admin:BatchDeletePhoto",
+      "handler": "BatchDeletePhoto",
+      "method": "POST",
+      "path": "/admin-api/v1/photos/batch-delete",
+      "doc": "批量删除照片（移入回收站）",
+      "file": "protocol/api/admin/media.api",
+      "line": 150
+    },
+    "admin:BatchDeleteRole": {
+      "operation": "admin:BatchDeleteRole",
+      "handler": "BatchDeleteRole",
+      "method": "POST",
+      "path": "/admin-api/v1/roles/batch-delete",
+      "doc": "批量删除角色",
+      "file": "protocol/api/admin/access.api",
+      "line": 305
+    },
+    "admin:BatchDeleteTag": {
+      "operation": "admin:BatchDeleteTag",
+      "handler": "BatchDeleteTag",
+      "method": "POST",
+      "path": "/admin-api/v1/tags/batch-delete",
+      "doc": "批量删除标签",
+      "file": "protocol/api/admin/content.api",
+      "line": 211
+    },
+    "admin:BatchDeleteTalk": {
+      "operation": "admin:BatchDeleteTalk",
+      "handler": "BatchDeleteTalk",
+      "method": "POST",
+      "path": "/admin-api/v1/talks/batch-delete",
+      "doc": "批量删除说说",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 191
+    },
+    "admin:BatchDeleteUploadLog": {
+      "operation": "admin:BatchDeleteUploadLog",
+      "handler": "BatchDeleteUploadLog",
+      "method": "POST",
+      "path": "/admin-api/v1/upload-logs/batch-delete",
+      "doc": "批量删除文件日志",
+      "file": "protocol/api/admin/syslog.api",
+      "line": 136
+    },
+    "admin:BatchDeleteVisitLog": {
+      "operation": "admin:BatchDeleteVisitLog",
+      "handler": "BatchDeleteVisitLog",
+      "method": "POST",
+      "path": "/admin-api/v1/visit-logs/batch-delete",
+      "doc": "批量删除访问日志",
+      "file": "protocol/api/admin/syslog.api",
+      "line": 176
+    },
+    "admin:BatchDestroyAlbum": {
+      "operation": "admin:BatchDestroyAlbum",
+      "handler": "BatchDestroyAlbum",
+      "method": "POST",
+      "path": "/admin-api/v1/albums/batch-destroy",
+      "doc": "批量销毁相册（彻底删除，不可恢复）",
+      "file": "protocol/api/admin/media.api",
+      "line": 84
+    },
+    "admin:BatchDestroyPhoto": {
+      "operation": "admin:BatchDestroyPhoto",
+      "handler": "BatchDestroyPhoto",
+      "method": "POST",
+      "path": "/admin-api/v1/photos/batch-destroy",
+      "doc": "批量销毁照片（彻底删除，不可恢复）",
+      "file": "protocol/api/admin/media.api",
+      "line": 158
+    },
+    "admin:BatchRestoreAlbum": {
+      "operation": "admin:BatchRestoreAlbum",
+      "handler": "BatchRestoreAlbum",
+      "method": "POST",
+      "path": "/admin-api/v1/albums/batch-restore",
+      "doc": "批量恢复相册",
+      "file": "protocol/api/admin/media.api",
+      "line": 80
+    },
+    "admin:BatchRestorePhoto": {
+      "operation": "admin:BatchRestorePhoto",
+      "handler": "BatchRestorePhoto",
+      "method": "POST",
+      "path": "/admin-api/v1/photos/batch-restore",
+      "doc": "批量恢复照片",
+      "file": "protocol/api/admin/media.api",
+      "line": 154
+    },
+    "admin:BatchReviewComments": {
+      "operation": "admin:BatchReviewComments",
+      "handler": "BatchReviewComments",
+      "method": "PATCH",
+      "path": "/admin-api/v1/comments/batch-review",
+      "doc": "批量审核评论",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 70
+    },
+    "admin:BindMeEmail": {
+      "operation": "admin:BindMeEmail",
+      "handler": "BindMeEmail",
+      "method": "POST",
+      "path": "/admin-api/v1/me/bind-email",
+      "doc": "绑定邮箱",
+      "file": "protocol/api/admin/account.api",
+      "line": 365
+    },
+    "admin:BindMeMobile": {
+      "operation": "admin:BindMeMobile",
+      "handler": "BindMeMobile",
+      "method": "POST",
+      "path": "/admin-api/v1/me/bind-mobile",
+      "doc": "绑定手机号",
+      "file": "protocol/api/admin/account.api",
+      "line": 369
+    },
+    "admin:BindMeThirdParty": {
+      "operation": "admin:BindMeThirdParty",
+      "handler": "BindMeThirdParty",
+      "method": "POST",
+      "path": "/admin-api/v1/me/bind-third-party",
+      "doc": "绑定第三方平台账号",
+      "file": "protocol/api/admin/account.api",
+      "line": 373
+    },
+    "admin:CleanApi": {
+      "operation": "admin:CleanApi",
+      "handler": "CleanApi",
+      "method": "POST",
+      "path": "/admin-api/v1/apis/clean",
+      "doc": "清空接口列表",
+      "file": "protocol/api/admin/access.api",
+      "line": 93
+    },
+    "admin:CleanMenu": {
+      "operation": "admin:CleanMenu",
+      "handler": "CleanMenu",
+      "method": "POST",
+      "path": "/admin-api/v1/menus/clean",
+      "doc": "清空菜单列表",
+      "file": "protocol/api/admin/access.api",
+      "line": 204
+    },
+    "admin:CreateAlbum": {
+      "operation": "admin:CreateAlbum",
+      "handler": "CreateAlbum",
+      "method": "POST",
+      "path": "/admin-api/v1/albums",
+      "doc": "创建相册",
+      "file": "protocol/api/admin/media.api",
+      "line": 68
+    },
+    "admin:CreateAnnouncement": {
+      "operation": "admin:CreateAnnouncement",
+      "handler": "CreateAnnouncement",
+      "method": "POST",
+      "path": "/admin-api/v1/announcements",
+      "doc": "创建公告",
+      "file": "protocol/api/admin/notification.api",
+      "line": 70
+    },
+    "admin:CreateApi": {
+      "operation": "admin:CreateApi",
+      "handler": "CreateApi",
+      "method": "POST",
+      "path": "/admin-api/v1/apis",
+      "doc": "创建接口",
+      "file": "protocol/api/admin/access.api",
+      "line": 73
+    },
+    "admin:CreateArticle": {
+      "operation": "admin:CreateArticle",
+      "handler": "CreateArticle",
+      "method": "POST",
+      "path": "/admin-api/v1/articles",
+      "doc": "创建文章",
+      "file": "protocol/api/admin/content.api",
+      "line": 95
+    },
+    "admin:CreateCategory": {
+      "operation": "admin:CreateCategory",
+      "handler": "CreateCategory",
+      "method": "POST",
+      "path": "/admin-api/v1/categories",
+      "doc": "创建分类",
+      "file": "protocol/api/admin/content.api",
+      "line": 153
+    },
+    "admin:CreateFriend": {
+      "operation": "admin:CreateFriend",
+      "handler": "CreateFriend",
+      "method": "POST",
+      "path": "/admin-api/v1/friends",
+      "doc": "创建友链",
+      "file": "protocol/api/admin/site.api",
+      "line": 188
+    },
+    "admin:CreateMenu": {
+      "operation": "admin:CreateMenu",
+      "handler": "CreateMenu",
+      "method": "POST",
+      "path": "/admin-api/v1/menus",
+      "doc": "创建菜单",
+      "file": "protocol/api/admin/access.api",
+      "line": 184
+    },
+    "admin:CreatePage": {
+      "operation": "admin:CreatePage",
+      "handler": "CreatePage",
+      "method": "POST",
+      "path": "/admin-api/v1/pages",
+      "doc": "创建页面",
+      "file": "protocol/api/admin/site.api",
+      "line": 130
+    },
+    "admin:CreatePhoto": {
+      "operation": "admin:CreatePhoto",
+      "handler": "CreatePhoto",
+      "method": "POST",
+      "path": "/admin-api/v1/photos",
+      "doc": "创建照片",
+      "file": "protocol/api/admin/media.api",
+      "line": 142
+    },
+    "admin:CreateRole": {
+      "operation": "admin:CreateRole",
+      "handler": "CreateRole",
+      "method": "POST",
+      "path": "/admin-api/v1/roles",
+      "doc": "创建角色",
+      "file": "protocol/api/admin/access.api",
+      "line": 297
+    },
+    "admin:CreateTag": {
+      "operation": "admin:CreateTag",
+      "handler": "CreateTag",
+      "method": "POST",
+      "path": "/admin-api/v1/tags",
+      "doc": "创建标签",
+      "file": "protocol/api/admin/content.api",
+      "line": 203
+    },
+    "admin:CreateTalk": {
+      "operation": "admin:CreateTalk",
+      "handler": "CreateTalk",
+      "method": "POST",
+      "path": "/admin-api/v1/talks",
+      "doc": "创建说说",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 179
+    },
+    "admin:CreateUploadToken": {
+      "operation": "admin:CreateUploadToken",
+      "handler": "CreateUploadToken",
+      "method": "POST",
+      "path": "/admin-api/v1/upload-tokens",
+      "doc": "获取上传凭证（前端直传）",
+      "file": "protocol/api/admin/common.api",
+      "line": 68
+    },
+    "admin:DeleteArticle": {
+      "operation": "admin:DeleteArticle",
+      "handler": "DeleteArticle",
+      "method": "DELETE",
+      "path": "/admin-api/v1/articles/:id",
+      "doc": "删除文章",
+      "file": "protocol/api/admin/content.api",
+      "line": 107
+    },
+    "admin:DeleteMeNotification": {
+      "operation": "admin:DeleteMeNotification",
+      "handler": "DeleteMeNotification",
+      "method": "POST",
+      "path": "/admin-api/v1/me/notifications/delete",
+      "doc": "删除我的通知",
+      "file": "protocol/api/admin/notification.api",
+      "line": 295
+    },
+    "admin:EmailLogin": {
+      "operation": "admin:EmailLogin",
+      "handler": "EmailLogin",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/login-by-email",
+      "doc": "邮箱验证码登录（仅登录）",
+      "file": "protocol/api/admin/account.api",
+      "line": 131
+    },
+    "admin:ExportArticle": {
+      "operation": "admin:ExportArticle",
+      "handler": "ExportArticle",
+      "method": "POST",
+      "path": "/admin-api/v1/articles/export",
+      "doc": "导出文章列表",
+      "file": "protocol/api/admin/content.api",
+      "line": 91
+    },
+    "admin:GetAboutMe": {
+      "operation": "admin:GetAboutMe",
+      "handler": "GetAboutMe",
+      "method": "GET",
+      "path": "/admin-api/v1/about-me",
+      "doc": "获取关于我的信息",
+      "file": "protocol/api/admin/site.api",
+      "line": 73
+    },
+    "admin:GetAlbum": {
+      "operation": "admin:GetAlbum",
+      "handler": "GetAlbum",
+      "method": "GET",
+      "path": "/admin-api/v1/albums/:id",
+      "doc": "获取相册详情",
+      "file": "protocol/api/admin/media.api",
+      "line": 64
+    },
+    "admin:GetAnnouncement": {
+      "operation": "admin:GetAnnouncement",
+      "handler": "GetAnnouncement",
+      "method": "GET",
+      "path": "/admin-api/v1/announcements/:id",
+      "doc": "获取公告详情",
+      "file": "protocol/api/admin/notification.api",
+      "line": 74
+    },
+    "admin:GetApi": {
+      "operation": "admin:GetApi",
+      "handler": "GetApi",
+      "method": "GET",
+      "path": "/admin-api/v1/apis/:id",
+      "doc": "获取接口详情",
+      "file": "protocol/api/admin/access.api",
+      "line": 77
+    },
+    "admin:GetArticle": {
+      "operation": "admin:GetArticle",
+      "handler": "GetArticle",
+      "method": "GET",
+      "path": "/admin-api/v1/articles/:id",
+      "doc": "获取文章详情",
+      "file": "protocol/api/admin/content.api",
+      "line": 99
+    },
+    "admin:GetArticleStats": {
+      "operation": "admin:GetArticleStats",
+      "handler": "GetArticleStats",
+      "method": "GET",
+      "path": "/admin-api/v1/stats/article",
+      "doc": "获取文章分析数据",
+      "file": "protocol/api/admin/stats.api",
+      "line": 98
+    },
+    "admin:GetCaptcha": {
+      "operation": "admin:GetCaptcha",
+      "handler": "GetCaptcha",
+      "method": "GET",
+      "path": "/admin-api/v1/auth/captchas",
+      "doc": "获取验证码",
+      "file": "protocol/api/admin/account.api",
+      "line": 24
+    },
+    "admin:GetDashboardStats": {
+      "operation": "admin:GetDashboardStats",
+      "handler": "GetDashboardStats",
+      "method": "GET",
+      "path": "/admin-api/v1/stats/dashboard",
+      "doc": "获取仪表盘统计数据",
+      "file": "protocol/api/admin/stats.api",
+      "line": 90
+    },
+    "admin:GetGeoStats": {
+      "operation": "admin:GetGeoStats",
+      "handler": "GetGeoStats",
+      "method": "GET",
+      "path": "/admin-api/v1/stats/geo",
+      "doc": "获取用户与访客的地区分布",
+      "file": "protocol/api/admin/stats.api",
+      "line": 102
+    },
+    "admin:GetGuest": {
+      "operation": "admin:GetGuest",
+      "handler": "GetGuest",
+      "method": "GET",
+      "path": "/admin-api/v1/guests/current",
+      "doc": "获取游客信息",
+      "file": "protocol/api/admin/account.api",
+      "line": 211
+    },
+    "admin:GetMe": {
+      "operation": "admin:GetMe",
+      "handler": "GetMe",
+      "method": "GET",
+      "path": "/admin-api/v1/me/profile",
+      "doc": "获取当前用户信息",
+      "file": "protocol/api/admin/account.api",
+      "line": 347
+    },
+    "admin:GetMeApis": {
+      "operation": "admin:GetMeApis",
+      "handler": "GetMeApis",
+      "method": "GET",
+      "path": "/admin-api/v1/me/apis",
+      "doc": "获取用户接口权限",
+      "file": "protocol/api/admin/account.api",
+      "line": 390
+    },
+    "admin:GetMeMenus": {
+      "operation": "admin:GetMeMenus",
+      "handler": "GetMeMenus",
+      "method": "GET",
+      "path": "/admin-api/v1/me/menus",
+      "doc": "获取用户菜单权限",
+      "file": "protocol/api/admin/account.api",
+      "line": 386
+    },
+    "admin:GetMeRoles": {
+      "operation": "admin:GetMeRoles",
+      "handler": "GetMeRoles",
+      "method": "GET",
+      "path": "/admin-api/v1/me/roles",
+      "doc": "获取用户角色",
+      "file": "protocol/api/admin/account.api",
+      "line": 382
+    },
+    "admin:GetMeUnreadCount": {
+      "operation": "admin:GetMeUnreadCount",
+      "handler": "GetMeUnreadCount",
+      "method": "GET",
+      "path": "/admin-api/v1/me/notifications/unread-count",
+      "doc": "获取我的未读分组数",
+      "file": "protocol/api/admin/notification.api",
+      "line": 283
+    },
+    "admin:GetMenu": {
+      "operation": "admin:GetMenu",
+      "handler": "GetMenu",
+      "method": "GET",
+      "path": "/admin-api/v1/menus/:id",
+      "doc": "获取菜单详情",
+      "file": "protocol/api/admin/access.api",
+      "line": 188
+    },
+    "admin:GetOauthAuthorizeUrl": {
+      "operation": "admin:GetOauthAuthorizeUrl",
+      "handler": "GetOauthAuthorizeUrl",
+      "method": "GET",
+      "path": "/admin-api/v1/auth/oauth/:platform/authorize",
+      "doc": "获取第三方授权URL",
+      "file": "protocol/api/admin/account.api",
+      "line": 147
+    },
+    "admin:GetOnlineUsers": {
+      "operation": "admin:GetOnlineUsers",
+      "handler": "GetOnlineUsers",
+      "method": "GET",
+      "path": "/admin-api/v1/users/online",
+      "doc": "获取在线用户列表",
+      "file": "protocol/api/admin/account.api",
+      "line": 509
+    },
+    "admin:GetRole": {
+      "operation": "admin:GetRole",
+      "handler": "GetRole",
+      "method": "GET",
+      "path": "/admin-api/v1/roles/:id",
+      "doc": "获取角色详情",
+      "file": "protocol/api/admin/access.api",
+      "line": 293
+    },
+    "admin:GetRolePermissions": {
+      "operation": "admin:GetRolePermissions",
+      "handler": "GetRolePermissions",
+      "method": "GET",
+      "path": "/admin-api/v1/roles/:role_id/permissions",
+      "doc": "查询角色权限配置",
+      "file": "protocol/api/admin/access.api",
+      "line": 309
+    },
+    "admin:GetSystemInfo": {
+      "operation": "admin:GetSystemInfo",
+      "handler": "GetSystemInfo",
+      "method": "GET",
+      "path": "/admin-api/v1/stats/system",
+      "doc": "获取服务器信息",
+      "file": "protocol/api/admin/stats.api",
+      "line": 106
+    },
+    "admin:GetTalk": {
+      "operation": "admin:GetTalk",
+      "handler": "GetTalk",
+      "method": "GET",
+      "path": "/admin-api/v1/talks/:id",
+      "doc": "获取说说详情",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 187
+    },
+    "admin:GetUserDetail": {
+      "operation": "admin:GetUserDetail",
+      "handler": "GetUserDetail",
+      "method": "GET",
+      "path": "/admin-api/v1/users/:user_id",
+      "doc": "获取用户详情",
+      "file": "protocol/api/admin/account.api",
+      "line": 493
+    },
+    "admin:GetVisitTrend": {
+      "operation": "admin:GetVisitTrend",
+      "handler": "GetVisitTrend",
+      "method": "GET",
+      "path": "/admin-api/v1/stats/visit-trend",
+      "doc": "获取访客数据趋势",
+      "file": "protocol/api/admin/stats.api",
+      "line": 94
+    },
+    "admin:GetWebsiteConfig": {
+      "operation": "admin:GetWebsiteConfig",
+      "handler": "GetWebsiteConfig",
+      "method": "GET",
+      "path": "/admin-api/v1/website-config",
+      "doc": "获取网站配置",
+      "file": "protocol/api/admin/site.api",
+      "line": 65
+    },
+    "admin:Logout": {
+      "operation": "admin:Logout",
+      "handler": "Logout",
+      "method": "DELETE",
+      "path": "/admin-api/v1/auth/session",
+      "doc": "退出登录（需登录）",
+      "file": "protocol/api/admin/account.api",
+      "line": 172
+    },
+    "admin:MobileLogin": {
+      "operation": "admin:MobileLogin",
+      "handler": "MobileLogin",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/login-by-mobile",
+      "doc": "手机验证码登录（自动注册）",
+      "file": "protocol/api/admin/account.api",
+      "line": 135
+    },
+    "admin:OauthLogin": {
+      "operation": "admin:OauthLogin",
+      "handler": "OauthLogin",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/oauth/:platform/login",
+      "doc": "第三方登录（自动注册）",
+      "file": "protocol/api/admin/account.api",
+      "line": 151
+    },
+    "admin:PasswordLogin": {
+      "operation": "admin:PasswordLogin",
+      "handler": "PasswordLogin",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/login-by-password",
+      "doc": "密码登录（账号/手机号/邮箱）",
+      "file": "protocol/api/admin/account.api",
+      "line": 127
+    },
+    "admin:PatchArticle": {
+      "operation": "admin:PatchArticle",
+      "handler": "PatchArticle",
+      "method": "PATCH",
+      "path": "/admin-api/v1/articles/:id",
+      "doc": "部分更新文章（置顶状态 / 删除状态）",
+      "file": "protocol/api/admin/content.api",
+      "line": 111
+    },
+    "admin:PatchComments": {
+      "operation": "admin:PatchComments",
+      "handler": "PatchComments",
+      "method": "PATCH",
+      "path": "/admin-api/v1/comments",
+      "doc": "部分更新评论（批量）",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 62
+    },
+    "admin:PatchMessages": {
+      "operation": "admin:PatchMessages",
+      "handler": "PatchMessages",
+      "method": "PATCH",
+      "path": "/admin-api/v1/messages",
+      "doc": "部分更新留言（批量）",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 118
+    },
+    "admin:Ping": {
+      "operation": "admin:Ping",
+      "handler": "Ping",
+      "method": "GET",
+      "path": "/admin-api/v1/ping",
+      "doc": "ping",
+      "file": "protocol/api/admin/admin.api",
+      "line": 60
+    },
+    "admin:PublishAnnouncement": {
+      "operation": "admin:PublishAnnouncement",
+      "handler": "PublishAnnouncement",
+      "method": "POST",
+      "path": "/admin-api/v1/announcements/:id/publish",
+      "doc": "发布公告",
+      "file": "protocol/api/admin/notification.api",
+      "line": 86
+    },
+    "admin:QueryAlbumList": {
+      "operation": "admin:QueryAlbumList",
+      "handler": "QueryAlbumList",
+      "method": "GET",
+      "path": "/admin-api/v1/albums",
+      "doc": "获取相册列表",
+      "file": "protocol/api/admin/media.api",
+      "line": 60
+    },
+    "admin:QueryAnnouncementList": {
+      "operation": "admin:QueryAnnouncementList",
+      "handler": "QueryAnnouncementList",
+      "method": "GET",
+      "path": "/admin-api/v1/announcements",
+      "doc": "获取公告列表",
+      "file": "protocol/api/admin/notification.api",
+      "line": 66
+    },
+    "admin:QueryApiList": {
+      "operation": "admin:QueryApiList",
+      "handler": "QueryApiList",
+      "method": "GET",
+      "path": "/admin-api/v1/apis",
+      "doc": "获取接口列表",
+      "file": "protocol/api/admin/access.api",
+      "line": 69
+    },
+    "admin:QueryArticleList": {
+      "operation": "admin:QueryArticleList",
+      "handler": "QueryArticleList",
+      "method": "GET",
+      "path": "/admin-api/v1/articles",
+      "doc": "获取文章列表",
+      "file": "protocol/api/admin/content.api",
+      "line": 87
+    },
+    "admin:QueryCategoryList": {
+      "operation": "admin:QueryCategoryList",
+      "handler": "QueryCategoryList",
+      "method": "GET",
+      "path": "/admin-api/v1/categories",
+      "doc": "获取分类列表",
+      "file": "protocol/api/admin/content.api",
+      "line": 149
+    },
+    "admin:QueryCommentList": {
+      "operation": "admin:QueryCommentList",
+      "handler": "QueryCommentList",
+      "method": "GET",
+      "path": "/admin-api/v1/comments",
+      "doc": "获取评论列表(后台)",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 58
+    },
+    "admin:QueryDeliveryList": {
+      "operation": "admin:QueryDeliveryList",
+      "handler": "QueryDeliveryList",
+      "method": "GET",
+      "path": "/admin-api/v1/notification-deliveries",
+      "doc": "获取外部渠道投递记录",
+      "file": "protocol/api/admin/notification.api",
+      "line": 133
+    },
+    "admin:QueryFileList": {
+      "operation": "admin:QueryFileList",
+      "handler": "QueryFileList",
+      "method": "GET",
+      "path": "/admin-api/v1/files",
+      "doc": "查询上传文件列表",
+      "file": "protocol/api/admin/common.api",
+      "line": 72
+    },
+    "admin:QueryFriendList": {
+      "operation": "admin:QueryFriendList",
+      "handler": "QueryFriendList",
+      "method": "GET",
+      "path": "/admin-api/v1/friends",
+      "doc": "获取友链列表",
+      "file": "protocol/api/admin/site.api",
+      "line": 184
+    },
+    "admin:QueryGuestList": {
+      "operation": "admin:QueryGuestList",
+      "handler": "QueryGuestList",
+      "method": "GET",
+      "path": "/admin-api/v1/guests",
+      "doc": "获取访客列表",
+      "file": "protocol/api/admin/account.api",
+      "line": 224
+    },
+    "admin:QueryLoginLogList": {
+      "operation": "admin:QueryLoginLogList",
+      "handler": "QueryLoginLogList",
+      "method": "GET",
+      "path": "/admin-api/v1/login-logs",
+      "doc": "获取登录日志列表",
+      "file": "protocol/api/admin/syslog.api",
+      "line": 42
+    },
+    "admin:QueryMeLoginLogList": {
+      "operation": "admin:QueryMeLoginLogList",
+      "handler": "QueryMeLoginLogList",
+      "method": "GET",
+      "path": "/admin-api/v1/me/login-logs",
+      "doc": "查询用户登录历史",
+      "file": "protocol/api/admin/account.api",
+      "line": 395
+    },
+    "admin:QueryMeNotificationList": {
+      "operation": "admin:QueryMeNotificationList",
+      "handler": "QueryMeNotificationList",
+      "method": "GET",
+      "path": "/admin-api/v1/me/notifications",
+      "doc": "获取我的通知列表（按分组）",
+      "file": "protocol/api/admin/notification.api",
+      "line": 279
+    },
+    "admin:QueryMenuList": {
+      "operation": "admin:QueryMenuList",
+      "handler": "QueryMenuList",
+      "method": "GET",
+      "path": "/admin-api/v1/menus",
+      "doc": "获取菜单列表",
+      "file": "protocol/api/admin/access.api",
+      "line": 180
+    },
+    "admin:QueryMessageList": {
+      "operation": "admin:QueryMessageList",
+      "handler": "QueryMessageList",
+      "method": "GET",
+      "path": "/admin-api/v1/messages",
+      "doc": "获取留言列表",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 114
+    },
+    "admin:QueryNotificationEventList": {
+      "operation": "admin:QueryNotificationEventList",
+      "handler": "QueryNotificationEventList",
+      "method": "GET",
+      "path": "/admin-api/v1/notification-events",
+      "doc": "获取通知事件与扇出进度",
+      "file": "protocol/api/admin/notification.api",
+      "line": 184
+    },
+    "admin:QueryOperationLogList": {
+      "operation": "admin:QueryOperationLogList",
+      "handler": "QueryOperationLogList",
+      "method": "GET",
+      "path": "/admin-api/v1/operation-logs",
+      "doc": "获取操作日志列表",
+      "file": "protocol/api/admin/syslog.api",
+      "line": 90
+    },
+    "admin:QueryPageList": {
+      "operation": "admin:QueryPageList",
+      "handler": "QueryPageList",
+      "method": "GET",
+      "path": "/admin-api/v1/pages",
+      "doc": "获取页面列表",
+      "file": "protocol/api/admin/site.api",
+      "line": 126
+    },
+    "admin:QueryPhotoList": {
+      "operation": "admin:QueryPhotoList",
+      "handler": "QueryPhotoList",
+      "method": "GET",
+      "path": "/admin-api/v1/photos",
+      "doc": "获取照片列表",
+      "file": "protocol/api/admin/media.api",
+      "line": 138
+    },
+    "admin:QueryRoleList": {
+      "operation": "admin:QueryRoleList",
+      "handler": "QueryRoleList",
+      "method": "GET",
+      "path": "/admin-api/v1/roles",
+      "doc": "获取角色列表",
+      "file": "protocol/api/admin/access.api",
+      "line": 289
+    },
+    "admin:QueryStalledEventList": {
+      "operation": "admin:QueryStalledEventList",
+      "handler": "QueryStalledEventList",
+      "method": "GET",
+      "path": "/admin-api/v1/notification-events/stalled",
+      "doc": "查询停滞的通知事件",
+      "file": "protocol/api/admin/notification.api",
+      "line": 188
+    },
+    "admin:QueryTagList": {
+      "operation": "admin:QueryTagList",
+      "handler": "QueryTagList",
+      "method": "GET",
+      "path": "/admin-api/v1/tags",
+      "doc": "获取标签列表",
+      "file": "protocol/api/admin/content.api",
+      "line": 199
+    },
+    "admin:QueryTalkList": {
+      "operation": "admin:QueryTalkList",
+      "handler": "QueryTalkList",
+      "method": "GET",
+      "path": "/admin-api/v1/talks",
+      "doc": "获取说说列表",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 175
+    },
+    "admin:QueryUploadLogList": {
+      "operation": "admin:QueryUploadLogList",
+      "handler": "QueryUploadLogList",
+      "method": "GET",
+      "path": "/admin-api/v1/upload-logs",
+      "doc": "获取文件日志列表",
+      "file": "protocol/api/admin/syslog.api",
+      "line": 132
+    },
+    "admin:QueryUserList": {
+      "operation": "admin:QueryUserList",
+      "handler": "QueryUserList",
+      "method": "GET",
+      "path": "/admin-api/v1/users",
+      "doc": "获取用户列表",
+      "file": "protocol/api/admin/account.api",
+      "line": 489
+    },
+    "admin:QueryUserNotificationList": {
+      "operation": "admin:QueryUserNotificationList",
+      "handler": "QueryUserNotificationList",
+      "method": "GET",
+      "path": "/admin-api/v1/users/:user_id/notifications",
+      "doc": "按用户查看收件箱条目",
+      "file": "protocol/api/admin/notification.api",
+      "line": 229
+    },
+    "admin:QueryVisitLogList": {
+      "operation": "admin:QueryVisitLogList",
+      "handler": "QueryVisitLogList",
+      "method": "GET",
+      "path": "/admin-api/v1/visit-logs",
+      "doc": "获取访问日志列表",
+      "file": "protocol/api/admin/syslog.api",
+      "line": 172
+    },
+    "admin:ReadAllMeNotification": {
+      "operation": "admin:ReadAllMeNotification",
+      "handler": "ReadAllMeNotification",
+      "method": "POST",
+      "path": "/admin-api/v1/me/notifications/read-all",
+      "doc": "我的通知全部已读",
+      "file": "protocol/api/admin/notification.api",
+      "line": 291
+    },
+    "admin:ReadMeNotification": {
+      "operation": "admin:ReadMeNotification",
+      "handler": "ReadMeNotification",
+      "method": "POST",
+      "path": "/admin-api/v1/me/notifications/read",
+      "doc": "标记我的通知已读",
+      "file": "protocol/api/admin/notification.api",
+      "line": 287
+    },
+    "admin:RedeliverDelivery": {
+      "operation": "admin:RedeliverDelivery",
+      "handler": "RedeliverDelivery",
+      "method": "POST",
+      "path": "/admin-api/v1/notification-deliveries/:id/redeliver",
+      "doc": "按投递记录重发",
+      "file": "protocol/api/admin/notification.api",
+      "line": 141
+    },
+    "admin:RedeliverEvent": {
+      "operation": "admin:RedeliverEvent",
+      "handler": "RedeliverEvent",
+      "method": "POST",
+      "path": "/admin-api/v1/notification-events/:id/redeliver",
+      "doc": "重新扇出事件",
+      "file": "protocol/api/admin/notification.api",
+      "line": 192
+    },
+    "admin:RefreshToken": {
+      "operation": "admin:RefreshToken",
+      "handler": "RefreshToken",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/refresh-token",
+      "doc": "刷新token",
+      "file": "protocol/api/admin/account.api",
+      "line": 155
+    },
+    "admin:Register": {
+      "operation": "admin:Register",
+      "handler": "Register",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/register",
+      "doc": "邮箱注册",
+      "file": "protocol/api/admin/account.api",
+      "line": 139
+    },
+    "admin:ResetPassword": {
+      "operation": "admin:ResetPassword",
+      "handler": "ResetPassword",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/password-resets",
+      "doc": "重置密码",
+      "file": "protocol/api/admin/account.api",
+      "line": 143
+    },
+    "admin:ResetUserPassword": {
+      "operation": "admin:ResetUserPassword",
+      "handler": "ResetUserPassword",
+      "method": "POST",
+      "path": "/admin-api/v1/users/:user_id/reset-password",
+      "doc": "重置用户密码",
+      "file": "protocol/api/admin/account.api",
+      "line": 497
+    },
+    "admin:ReviewComment": {
+      "operation": "admin:ReviewComment",
+      "handler": "ReviewComment",
+      "method": "PATCH",
+      "path": "/admin-api/v1/comments/:id/review",
+      "doc": "审核评论",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 66
+    },
+    "admin:RevokeAnnouncement": {
+      "operation": "admin:RevokeAnnouncement",
+      "handler": "RevokeAnnouncement",
+      "method": "POST",
+      "path": "/admin-api/v1/announcements/:id/revoke",
+      "doc": "撤回公告",
+      "file": "protocol/api/admin/notification.api",
+      "line": 90
+    },
+    "admin:SendEmailCode": {
+      "operation": "admin:SendEmailCode",
+      "handler": "SendEmailCode",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/email-verification-codes",
+      "doc": "发送邮箱验证码",
+      "file": "protocol/api/admin/account.api",
+      "line": 119
+    },
+    "admin:SendMobileCode": {
+      "operation": "admin:SendMobileCode",
+      "handler": "SendMobileCode",
+      "method": "POST",
+      "path": "/admin-api/v1/auth/mobile-verification-codes",
+      "doc": "发送手机验证码",
+      "file": "protocol/api/admin/account.api",
+      "line": 123
+    },
+    "admin:SyncApi": {
+      "operation": "admin:SyncApi",
+      "handler": "SyncApi",
+      "method": "POST",
+      "path": "/admin-api/v1/apis/sync",
+      "doc": "同步接口列表",
+      "file": "protocol/api/admin/access.api",
+      "line": 89
+    },
+    "admin:SyncMenu": {
+      "operation": "admin:SyncMenu",
+      "handler": "SyncMenu",
+      "method": "POST",
+      "path": "/admin-api/v1/menus/sync",
+      "doc": "同步菜单列表",
+      "file": "protocol/api/admin/access.api",
+      "line": 200
+    },
+    "admin:UnbindMeThirdParty": {
+      "operation": "admin:UnbindMeThirdParty",
+      "handler": "UnbindMeThirdParty",
+      "method": "POST",
+      "path": "/admin-api/v1/me/unbind-third-party",
+      "doc": "解绑第三方平台账号",
+      "file": "protocol/api/admin/account.api",
+      "line": 377
+    },
+    "admin:UpdateAboutMe": {
+      "operation": "admin:UpdateAboutMe",
+      "handler": "UpdateAboutMe",
+      "method": "PUT",
+      "path": "/admin-api/v1/about-me",
+      "doc": "更新关于我的信息（请求体与响应共用 AboutMeVO，同上）",
+      "file": "protocol/api/admin/site.api",
+      "line": 77
+    },
+    "admin:UpdateAlbum": {
+      "operation": "admin:UpdateAlbum",
+      "handler": "UpdateAlbum",
+      "method": "PUT",
+      "path": "/admin-api/v1/albums/:id",
+      "doc": "更新相册",
+      "file": "protocol/api/admin/media.api",
+      "line": 72
+    },
+    "admin:UpdateAnnouncement": {
+      "operation": "admin:UpdateAnnouncement",
+      "handler": "UpdateAnnouncement",
+      "method": "PUT",
+      "path": "/admin-api/v1/announcements/:id",
+      "doc": "更新公告",
+      "file": "protocol/api/admin/notification.api",
+      "line": 78
+    },
+    "admin:UpdateApi": {
+      "operation": "admin:UpdateApi",
+      "handler": "UpdateApi",
+      "method": "PUT",
+      "path": "/admin-api/v1/apis/:id",
+      "doc": "更新接口",
+      "file": "protocol/api/admin/access.api",
+      "line": 81
+    },
+    "admin:UpdateArticle": {
+      "operation": "admin:UpdateArticle",
+      "handler": "UpdateArticle",
+      "method": "PUT",
+      "path": "/admin-api/v1/articles/:id",
+      "doc": "更新文章",
+      "file": "protocol/api/admin/content.api",
+      "line": 103
+    },
+    "admin:UpdateCategory": {
+      "operation": "admin:UpdateCategory",
+      "handler": "UpdateCategory",
+      "method": "PUT",
+      "path": "/admin-api/v1/categories/:id",
+      "doc": "更新分类",
+      "file": "protocol/api/admin/content.api",
+      "line": 157
+    },
+    "admin:UpdateFriend": {
+      "operation": "admin:UpdateFriend",
+      "handler": "UpdateFriend",
+      "method": "PUT",
+      "path": "/admin-api/v1/friends/:id",
+      "doc": "更新友链",
+      "file": "protocol/api/admin/site.api",
+      "line": 192
+    },
+    "admin:UpdateMe": {
+      "operation": "admin:UpdateMe",
+      "handler": "UpdateMe",
+      "method": "PATCH",
+      "path": "/admin-api/v1/me/profile",
+      "doc": "更新当前用户信息",
+      "file": "protocol/api/admin/account.api",
+      "line": 351
+    },
+    "admin:UpdateMeAvatar": {
+      "operation": "admin:UpdateMeAvatar",
+      "handler": "UpdateMeAvatar",
+      "method": "PUT",
+      "path": "/admin-api/v1/me/avatar",
+      "doc": "修改用户头像",
+      "file": "protocol/api/admin/account.api",
+      "line": 356
+    },
+    "admin:UpdateMePassword": {
+      "operation": "admin:UpdateMePassword",
+      "handler": "UpdateMePassword",
+      "method": "PUT",
+      "path": "/admin-api/v1/me/password",
+      "doc": "修改用户密码",
+      "file": "protocol/api/admin/account.api",
+      "line": 360
+    },
+    "admin:UpdateMenu": {
+      "operation": "admin:UpdateMenu",
+      "handler": "UpdateMenu",
+      "method": "PUT",
+      "path": "/admin-api/v1/menus/:id",
+      "doc": "更新菜单",
+      "file": "protocol/api/admin/access.api",
+      "line": 192
+    },
+    "admin:UpdatePage": {
+      "operation": "admin:UpdatePage",
+      "handler": "UpdatePage",
+      "method": "PUT",
+      "path": "/admin-api/v1/pages/:id",
+      "doc": "更新页面",
+      "file": "protocol/api/admin/site.api",
+      "line": 134
+    },
+    "admin:UpdatePhoto": {
+      "operation": "admin:UpdatePhoto",
+      "handler": "UpdatePhoto",
+      "method": "PUT",
+      "path": "/admin-api/v1/photos/:id",
+      "doc": "更新照片",
+      "file": "protocol/api/admin/media.api",
+      "line": 146
+    },
+    "admin:UpdateRole": {
+      "operation": "admin:UpdateRole",
+      "handler": "UpdateRole",
+      "method": "PUT",
+      "path": "/admin-api/v1/roles/:id",
+      "doc": "更新角色信息",
+      "file": "protocol/api/admin/access.api",
+      "line": 301
+    },
+    "admin:UpdateRoleApiPermissions": {
+      "operation": "admin:UpdateRoleApiPermissions",
+      "handler": "UpdateRoleApiPermissions",
+      "method": "PUT",
+      "path": "/admin-api/v1/roles/:role_id/apis",
+      "doc": "更新角色接口权限",
+      "file": "protocol/api/admin/access.api",
+      "line": 317
+    },
+    "admin:UpdateRoleMenuPermissions": {
+      "operation": "admin:UpdateRoleMenuPermissions",
+      "handler": "UpdateRoleMenuPermissions",
+      "method": "PUT",
+      "path": "/admin-api/v1/roles/:role_id/menus",
+      "doc": "更新角色菜单权限",
+      "file": "protocol/api/admin/access.api",
+      "line": 313
+    },
+    "admin:UpdateTag": {
+      "operation": "admin:UpdateTag",
+      "handler": "UpdateTag",
+      "method": "PUT",
+      "path": "/admin-api/v1/tags/:id",
+      "doc": "更新标签",
+      "file": "protocol/api/admin/content.api",
+      "line": 207
+    },
+    "admin:UpdateTalk": {
+      "operation": "admin:UpdateTalk",
+      "handler": "UpdateTalk",
+      "method": "PUT",
+      "path": "/admin-api/v1/talks/:id",
+      "doc": "更新说说",
+      "file": "protocol/api/admin/discussion.api",
+      "line": 183
+    },
+    "admin:UpdateUserRoles": {
+      "operation": "admin:UpdateUserRoles",
+      "handler": "UpdateUserRoles",
+      "method": "PUT",
+      "path": "/admin-api/v1/users/:user_id/roles",
+      "doc": "更新用户角色",
+      "file": "protocol/api/admin/account.api",
+      "line": 505
+    },
+    "admin:UpdateUserStatus": {
+      "operation": "admin:UpdateUserStatus",
+      "handler": "UpdateUserStatus",
+      "method": "PATCH",
+      "path": "/admin-api/v1/users/:user_id",
+      "doc": "更新用户状态",
+      "file": "protocol/api/admin/account.api",
+      "line": 501
+    },
+    "admin:UpdateWebsiteConfig": {
+      "operation": "admin:UpdateWebsiteConfig",
+      "handler": "UpdateWebsiteConfig",
+      "method": "PUT",
+      "path": "/admin-api/v1/website-config",
+      "doc": "更新网站配置（请求体与响应共用 WebsiteConfigVO：单例配置对象，无服务端生成字段，二者同构）",
+      "file": "protocol/api/admin/site.api",
+      "line": 69
+    },
+    "admin:UploadFile": {
+      "operation": "admin:UploadFile",
+      "handler": "UploadFile",
+      "method": "POST",
+      "path": "/admin-api/v1/files",
+      "doc": "上传文件（服务端上传）",
+      "file": "protocol/api/admin/common.api",
+      "line": 64
+    },
+    "admin:Websocket": {
+      "operation": "admin:Websocket",
+      "handler": "Websocket",
+      "method": "GET",
+      "path": "/admin-api/v1/websocket",
+      "doc": "WebSocket消息",
+      "file": "protocol/api/admin/common.api",
+      "line": 83
+    },
+    "app:BindMeEmail": {
+      "operation": "app:BindMeEmail",
+      "handler": "BindMeEmail",
+      "method": "POST",
+      "path": "/api/v1/me/bind-email",
+      "doc": "绑定邮箱",
+      "file": "protocol/api/app/account.api",
+      "line": 293
+    },
+    "app:BindMeMobile": {
+      "operation": "app:BindMeMobile",
+      "handler": "BindMeMobile",
+      "method": "POST",
+      "path": "/api/v1/me/bind-mobile",
+      "doc": "绑定手机号",
+      "file": "protocol/api/app/account.api",
+      "line": 297
+    },
+    "app:BindMeThirdParty": {
+      "operation": "app:BindMeThirdParty",
+      "handler": "BindMeThirdParty",
+      "method": "POST",
+      "path": "/api/v1/me/bind-third-party",
+      "doc": "绑定第三方平台账号",
+      "file": "protocol/api/app/account.api",
+      "line": 301
+    },
+    "app:CreateComment": {
+      "operation": "app:CreateComment",
+      "handler": "CreateComment",
+      "method": "POST",
+      "path": "/api/v1/comments",
+      "doc": "创建评论",
+      "file": "protocol/api/app/discussion.api",
+      "line": 118
+    },
+    "app:CreateMessage": {
+      "operation": "app:CreateMessage",
+      "handler": "CreateMessage",
+      "method": "POST",
+      "path": "/api/v1/messages",
+      "doc": "创建留言",
+      "file": "protocol/api/app/discussion.api",
+      "line": 175
+    },
+    "app:CreateUploadToken": {
+      "operation": "app:CreateUploadToken",
+      "handler": "CreateUploadToken",
+      "method": "POST",
+      "path": "/api/v1/upload-tokens",
+      "doc": "获取上传凭证（前端直传）",
+      "file": "protocol/api/app/common.api",
+      "line": 53
+    },
+    "app:DeactivateAccount": {
+      "operation": "app:DeactivateAccount",
+      "handler": "DeactivateAccount",
+      "method": "POST",
+      "path": "/api/v1/me/deactivate",
+      "doc": "停用账号（进入冷静期）",
+      "file": "protocol/api/app/account.api",
+      "line": 309
+    },
+    "app:DeleteNotification": {
+      "operation": "app:DeleteNotification",
+      "handler": "DeleteNotification",
+      "method": "POST",
+      "path": "/api/v1/notifications/delete",
+      "doc": "删除通知",
+      "file": "protocol/api/app/notification.api",
+      "line": 70
+    },
+    "app:EmailLogin": {
+      "operation": "app:EmailLogin",
+      "handler": "EmailLogin",
+      "method": "POST",
+      "path": "/api/v1/auth/login-by-email",
+      "doc": "邮箱验证码登录（仅登录）",
+      "file": "protocol/api/app/account.api",
+      "line": 131
+    },
+    "app:GetAboutMe": {
+      "operation": "app:GetAboutMe",
+      "handler": "GetAboutMe",
+      "method": "GET",
+      "path": "/api/v1/about-me",
+      "doc": "获取关于我的信息",
+      "file": "protocol/api/app/site.api",
+      "line": 108
+    },
+    "app:GetAlbum": {
+      "operation": "app:GetAlbum",
+      "handler": "GetAlbum",
+      "method": "GET",
+      "path": "/api/v1/albums/:id",
+      "doc": "获取相册详情",
+      "file": "protocol/api/app/media.api",
+      "line": 34
+    },
+    "app:GetArticle": {
+      "operation": "app:GetArticle",
+      "handler": "GetArticle",
+      "method": "GET",
+      "path": "/api/v1/articles/:id",
+      "doc": "获取文章详情",
+      "file": "protocol/api/app/content.api",
+      "line": 84
+    },
+    "app:GetBlogHomeInfo": {
+      "operation": "app:GetBlogHomeInfo",
+      "handler": "GetBlogHomeInfo",
+      "method": "GET",
+      "path": "/api/v1/home",
+      "doc": "获取博客前台首页信息",
+      "file": "protocol/api/app/site.api",
+      "line": 89
+    },
+    "app:GetCaptcha": {
+      "operation": "app:GetCaptcha",
+      "handler": "GetCaptcha",
+      "method": "GET",
+      "path": "/api/v1/auth/captchas",
+      "doc": "获取验证码",
+      "file": "protocol/api/app/account.api",
+      "line": 24
+    },
+    "app:GetGuest": {
+      "operation": "app:GetGuest",
+      "handler": "GetGuest",
+      "method": "GET",
+      "path": "/api/v1/guests/current",
+      "doc": "获取游客信息",
+      "file": "protocol/api/app/account.api",
+      "line": 195
+    },
+    "app:GetMe": {
+      "operation": "app:GetMe",
+      "handler": "GetMe",
+      "method": "GET",
+      "path": "/api/v1/me/profile",
+      "doc": "获取当前用户信息",
+      "file": "protocol/api/app/account.api",
+      "line": 285
+    },
+    "app:GetNotifyPreference": {
+      "operation": "app:GetNotifyPreference",
+      "handler": "GetNotifyPreference",
+      "method": "GET",
+      "path": "/api/v1/notifications/preferences",
+      "doc": "获取通知偏好",
+      "file": "protocol/api/app/notification.api",
+      "line": 99
+    },
+    "app:GetOauthAuthorizeUrl": {
+      "operation": "app:GetOauthAuthorizeUrl",
+      "handler": "GetOauthAuthorizeUrl",
+      "method": "GET",
+      "path": "/api/v1/auth/oauth/:platform/authorize",
+      "doc": "获取第三方授权URL",
+      "file": "protocol/api/app/account.api",
+      "line": 147
+    },
+    "app:GetTalk": {
+      "operation": "app:GetTalk",
+      "handler": "GetTalk",
+      "method": "GET",
+      "path": "/api/v1/talks/:id",
+      "doc": "获取说说详情",
+      "file": "protocol/api/app/discussion.api",
+      "line": 218
+    },
+    "app:GetUnreadCount": {
+      "operation": "app:GetUnreadCount",
+      "handler": "GetUnreadCount",
+      "method": "GET",
+      "path": "/api/v1/notifications/unread-count",
+      "doc": "获取未读分组数",
+      "file": "protocol/api/app/notification.api",
+      "line": 58
+    },
+    "app:LikeArticle": {
+      "operation": "app:LikeArticle",
+      "handler": "LikeArticle",
+      "method": "POST",
+      "path": "/api/v1/articles/:id/like",
+      "doc": "点赞文章",
+      "file": "protocol/api/app/content.api",
+      "line": 98
+    },
+    "app:LikeComment": {
+      "operation": "app:LikeComment",
+      "handler": "LikeComment",
+      "method": "POST",
+      "path": "/api/v1/comments/:id/like",
+      "doc": "点赞评论",
+      "file": "protocol/api/app/discussion.api",
+      "line": 126
+    },
+    "app:LikeTalk": {
+      "operation": "app:LikeTalk",
+      "handler": "LikeTalk",
+      "method": "POST",
+      "path": "/api/v1/talks/:id/like",
+      "doc": "点赞说说",
+      "file": "protocol/api/app/discussion.api",
+      "line": 231
+    },
+    "app:Logout": {
+      "operation": "app:Logout",
+      "handler": "Logout",
+      "method": "DELETE",
+      "path": "/api/v1/auth/session",
+      "doc": "退出登录（需登录）",
+      "file": "protocol/api/app/account.api",
+      "line": 172
+    },
+    "app:MobileLogin": {
+      "operation": "app:MobileLogin",
+      "handler": "MobileLogin",
+      "method": "POST",
+      "path": "/api/v1/auth/login-by-mobile",
+      "doc": "手机验证码登录（自动注册）",
+      "file": "protocol/api/app/account.api",
+      "line": 135
+    },
+    "app:NotificationStream": {
+      "operation": "app:NotificationStream",
+      "handler": "NotificationStream",
+      "method": "GET",
+      "path": "/api/v1/notifications/stream",
+      "doc": "通知实时推送流（SSE）",
+      "file": "protocol/api/app/notification.api",
+      "line": 159
+    },
+    "app:OauthLogin": {
+      "operation": "app:OauthLogin",
+      "handler": "OauthLogin",
+      "method": "POST",
+      "path": "/api/v1/auth/oauth/:platform/login",
+      "doc": "第三方登录（自动注册）",
+      "file": "protocol/api/app/account.api",
+      "line": 151
+    },
+    "app:PasswordLogin": {
+      "operation": "app:PasswordLogin",
+      "handler": "PasswordLogin",
+      "method": "POST",
+      "path": "/api/v1/auth/login-by-password",
+      "doc": "密码登录（账号/手机号/邮箱）",
+      "file": "protocol/api/app/account.api",
+      "line": 127
+    },
+    "app:Ping": {
+      "operation": "app:Ping",
+      "handler": "Ping",
+      "method": "GET",
+      "path": "/api/v1/ping",
+      "doc": "健康检查",
+      "file": "protocol/api/app/app.api",
+      "line": 58
+    },
+    "app:QueryAlbumList": {
+      "operation": "app:QueryAlbumList",
+      "handler": "QueryAlbumList",
+      "method": "GET",
+      "path": "/api/v1/albums",
+      "doc": "获取相册列表",
+      "file": "protocol/api/app/media.api",
+      "line": 30
+    },
+    "app:QueryAlbumPhotoList": {
+      "operation": "app:QueryAlbumPhotoList",
+      "handler": "QueryAlbumPhotoList",
+      "method": "GET",
+      "path": "/api/v1/albums/:album_id/photos",
+      "doc": "获取相册下的照片列表",
+      "file": "protocol/api/app/media.api",
+      "line": 59
+    },
+    "app:QueryArchivedArticleList": {
+      "operation": "app:QueryArchivedArticleList",
+      "handler": "QueryArchivedArticleList",
+      "method": "GET",
+      "path": "/api/v1/articles/archived",
+      "doc": "获取归档文章列表",
+      "file": "protocol/api/app/content.api",
+      "line": 76
+    },
+    "app:QueryArticleList": {
+      "operation": "app:QueryArticleList",
+      "handler": "QueryArticleList",
+      "method": "GET",
+      "path": "/api/v1/articles",
+      "doc": "获取文章列表",
+      "file": "protocol/api/app/content.api",
+      "line": 80
+    },
+    "app:QueryCategoryList": {
+      "operation": "app:QueryCategoryList",
+      "handler": "QueryCategoryList",
+      "method": "GET",
+      "path": "/api/v1/categories",
+      "doc": "获取分类列表",
+      "file": "protocol/api/app/content.api",
+      "line": 130
+    },
+    "app:QueryCommentList": {
+      "operation": "app:QueryCommentList",
+      "handler": "QueryCommentList",
+      "method": "GET",
+      "path": "/api/v1/comments",
+      "doc": "获取评论列表",
+      "file": "protocol/api/app/discussion.api",
+      "line": 97
+    },
+    "app:QueryCommentReplyList": {
+      "operation": "app:QueryCommentReplyList",
+      "handler": "QueryCommentReplyList",
+      "method": "GET",
+      "path": "/api/v1/comments/:comment_id/replies",
+      "doc": "获取评论回复列表",
+      "file": "protocol/api/app/discussion.api",
+      "line": 101
+    },
+    "app:QueryFriendList": {
+      "operation": "app:QueryFriendList",
+      "handler": "QueryFriendList",
+      "method": "GET",
+      "path": "/api/v1/friends",
+      "doc": "获取友链列表",
+      "file": "protocol/api/app/site.api",
+      "line": 164
+    },
+    "app:QueryMessageList": {
+      "operation": "app:QueryMessageList",
+      "handler": "QueryMessageList",
+      "method": "GET",
+      "path": "/api/v1/messages",
+      "doc": "获取留言列表",
+      "file": "protocol/api/app/discussion.api",
+      "line": 162
+    },
+    "app:QueryNotificationList": {
+      "operation": "app:QueryNotificationList",
+      "handler": "QueryNotificationList",
+      "method": "GET",
+      "path": "/api/v1/notifications",
+      "doc": "获取通知列表（按分组分页）",
+      "file": "protocol/api/app/notification.api",
+      "line": 54
+    },
+    "app:QueryPageList": {
+      "operation": "app:QueryPageList",
+      "handler": "QueryPageList",
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "doc": "获取页面列表",
+      "file": "protocol/api/app/site.api",
+      "line": 136
+    },
+    "app:QueryRecentCommentList": {
+      "operation": "app:QueryRecentCommentList",
+      "handler": "QueryRecentCommentList",
+      "method": "GET",
+      "path": "/api/v1/comments/recent",
+      "doc": "获取最新评论列表",
+      "file": "protocol/api/app/discussion.api",
+      "line": 105
+    },
+    "app:QueryRecommendArticleList": {
+      "operation": "app:QueryRecommendArticleList",
+      "handler": "QueryRecommendArticleList",
+      "method": "GET",
+      "path": "/api/v1/articles/recommended",
+      "doc": "获取推荐文章列表",
+      "file": "protocol/api/app/content.api",
+      "line": 72
+    },
+    "app:QueryTagList": {
+      "operation": "app:QueryTagList",
+      "handler": "QueryTagList",
+      "method": "GET",
+      "path": "/api/v1/tags",
+      "doc": "获取标签列表",
+      "file": "protocol/api/app/content.api",
+      "line": 158
+    },
+    "app:QueryTalkList": {
+      "operation": "app:QueryTalkList",
+      "handler": "QueryTalkList",
+      "method": "GET",
+      "path": "/api/v1/talks",
+      "doc": "获取说说列表",
+      "file": "protocol/api/app/discussion.api",
+      "line": 214
+    },
+    "app:ReactivateAccount": {
+      "operation": "app:ReactivateAccount",
+      "handler": "ReactivateAccount",
+      "method": "POST",
+      "path": "/api/v1/me/reactivate",
+      "doc": "恢复账号（冷静期内）",
+      "file": "protocol/api/app/account.api",
+      "line": 313
+    },
+    "app:ReadAllNotification": {
+      "operation": "app:ReadAllNotification",
+      "handler": "ReadAllNotification",
+      "method": "POST",
+      "path": "/api/v1/notifications/read-all",
+      "doc": "全部标记已读",
+      "file": "protocol/api/app/notification.api",
+      "line": 66
+    },
+    "app:ReadNotification": {
+      "operation": "app:ReadNotification",
+      "handler": "ReadNotification",
+      "method": "POST",
+      "path": "/api/v1/notifications/read",
+      "doc": "标记通知已读",
+      "file": "protocol/api/app/notification.api",
+      "line": 62
+    },
+    "app:RefreshToken": {
+      "operation": "app:RefreshToken",
+      "handler": "RefreshToken",
+      "method": "POST",
+      "path": "/api/v1/auth/refresh-token",
+      "doc": "刷新token",
+      "file": "protocol/api/app/account.api",
+      "line": 155
+    },
+    "app:Register": {
+      "operation": "app:Register",
+      "handler": "Register",
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "doc": "邮箱注册",
+      "file": "protocol/api/app/account.api",
+      "line": 139
+    },
+    "app:ResetPassword": {
+      "operation": "app:ResetPassword",
+      "handler": "ResetPassword",
+      "method": "POST",
+      "path": "/api/v1/auth/password-resets",
+      "doc": "重置密码",
+      "file": "protocol/api/app/account.api",
+      "line": 143
+    },
+    "app:SendEmailCode": {
+      "operation": "app:SendEmailCode",
+      "handler": "SendEmailCode",
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification-codes",
+      "doc": "发送邮箱验证码",
+      "file": "protocol/api/app/account.api",
+      "line": 119
+    },
+    "app:SendMobileCode": {
+      "operation": "app:SendMobileCode",
+      "handler": "SendMobileCode",
+      "method": "POST",
+      "path": "/api/v1/auth/mobile-verification-codes",
+      "doc": "发送手机验证码",
+      "file": "protocol/api/app/account.api",
+      "line": 123
+    },
+    "app:UnbindMeThirdParty": {
+      "operation": "app:UnbindMeThirdParty",
+      "handler": "UnbindMeThirdParty",
+      "method": "POST",
+      "path": "/api/v1/me/unbind-third-party",
+      "doc": "解绑第三方平台账号",
+      "file": "protocol/api/app/account.api",
+      "line": 305
+    },
+    "app:UnlikeArticle": {
+      "operation": "app:UnlikeArticle",
+      "handler": "UnlikeArticle",
+      "method": "DELETE",
+      "path": "/api/v1/articles/:id/like",
+      "doc": "取消点赞文章",
+      "file": "protocol/api/app/content.api",
+      "line": 102
+    },
+    "app:UnlikeComment": {
+      "operation": "app:UnlikeComment",
+      "handler": "UnlikeComment",
+      "method": "DELETE",
+      "path": "/api/v1/comments/:id/like",
+      "doc": "取消点赞评论",
+      "file": "protocol/api/app/discussion.api",
+      "line": 130
+    },
+    "app:UnlikeTalk": {
+      "operation": "app:UnlikeTalk",
+      "handler": "UnlikeTalk",
+      "method": "DELETE",
+      "path": "/api/v1/talks/:id/like",
+      "doc": "取消点赞说说",
+      "file": "protocol/api/app/discussion.api",
+      "line": 235
+    },
+    "app:Unsubscribe": {
+      "operation": "app:Unsubscribe",
+      "handler": "Unsubscribe",
+      "method": "POST",
+      "path": "/api/v1/notifications/unsubscribe",
+      "doc": "执行退订",
+      "file": "protocol/api/app/notification.api",
+      "line": 135
+    },
+    "app:UpdateComment": {
+      "operation": "app:UpdateComment",
+      "handler": "UpdateComment",
+      "method": "PUT",
+      "path": "/api/v1/comments/:id",
+      "doc": "更新评论",
+      "file": "protocol/api/app/discussion.api",
+      "line": 122
+    },
+    "app:UpdateMe": {
+      "operation": "app:UpdateMe",
+      "handler": "UpdateMe",
+      "method": "PATCH",
+      "path": "/api/v1/me/profile",
+      "doc": "更新当前用户信息",
+      "file": "protocol/api/app/account.api",
+      "line": 289
+    },
+    "app:UpdateNotifyPreference": {
+      "operation": "app:UpdateNotifyPreference",
+      "handler": "UpdateNotifyPreference",
+      "method": "PUT",
+      "path": "/api/v1/notifications/preferences",
+      "doc": "更新通知偏好",
+      "file": "protocol/api/app/notification.api",
+      "line": 103
+    },
+    "app:UploadFile": {
+      "operation": "app:UploadFile",
+      "handler": "UploadFile",
+      "method": "POST",
+      "path": "/api/v1/files",
+      "doc": "上传文件（服务端上传）",
+      "file": "protocol/api/app/common.api",
+      "line": 49
+    },
+    "app:VerifyUnsubscribe": {
+      "operation": "app:VerifyUnsubscribe",
+      "handler": "VerifyUnsubscribe",
+      "method": "GET",
+      "path": "/api/v1/notifications/unsubscribe",
+      "doc": "校验退订令牌",
+      "file": "protocol/api/app/notification.api",
+      "line": 131
+    },
+    "app:Websocket": {
+      "operation": "app:Websocket",
+      "handler": "Websocket",
+      "method": "GET",
+      "path": "/api/v1/websocket",
+      "doc": "WebSocket消息",
+      "file": "protocol/api/app/common.api",
+      "line": 64
+    }
+  }
+}
